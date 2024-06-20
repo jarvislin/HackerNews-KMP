@@ -46,7 +46,7 @@ class ItemRepositoryImpl(
         } else null // ignore failed request
     }
 
-    suspend fun fetchItems(category: Category): List<Long> {
+    override suspend fun fetchStories(category: Category): List<Long> {
         val response = client.get("$ITEM_API_URL/${category.path}")
         return if (response.status.value in 200..299) {
             val body = response.bodyAsText()
