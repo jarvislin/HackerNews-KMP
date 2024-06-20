@@ -30,8 +30,11 @@ kotlin {
     }
     
     sourceSets {
-        
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
         androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
         }
@@ -43,6 +46,7 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kotlin.serialization.json)
+            implementation(libs.ktor.client.core)
         }
     }
 }
