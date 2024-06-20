@@ -3,6 +3,9 @@ package domain.models
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents an Ask item.
+ */
 @Serializable
 class Ask(
     @SerialName("by")

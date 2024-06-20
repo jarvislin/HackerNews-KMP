@@ -3,6 +3,9 @@ package domain.models
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a story.
+ */
 @Serializable
 class Story(
     @SerialName("by")

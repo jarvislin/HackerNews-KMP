@@ -3,6 +3,9 @@ package domain.models
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a job.
+ */
 @Serializable
 class Job(
     @SerialName("by")

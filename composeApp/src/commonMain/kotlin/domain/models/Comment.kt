@@ -3,6 +3,9 @@ package domain.models
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * A comment on a story/ask/poll/comment.
+ */
 @Serializable
 class Comment(
     @SerialName("by")
