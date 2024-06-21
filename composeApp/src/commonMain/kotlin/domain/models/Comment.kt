@@ -17,7 +17,7 @@ class Comment(
     @SerialName("parent")
     val parentId: Long,
     @SerialName("text")
-    val text: Int,
+    val text: String,
     @SerialName("time")
     val time: Long,
 ) : Item()

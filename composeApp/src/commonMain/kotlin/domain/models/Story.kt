@@ -11,11 +11,11 @@ class Story(
     @SerialName("by")
     val userName: String,
     @SerialName("descendants")
-    val countOfComment: Long,
+    val countOfComment: Int,
     @SerialName("id")
     val id: Long,
     @SerialName("kids")
-    val commentIds: List<Long>,
+    val commentIds: List<Long>? = null,
     @SerialName("score")
     val score: Int,
     @SerialName("time")

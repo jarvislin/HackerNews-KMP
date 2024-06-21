@@ -1,10 +1,10 @@
 package modules
 
-import domain.interactors.GetBestStories
 import domain.interactors.GetItems
+import domain.interactors.GetStories
 import org.koin.dsl.module
 
 val useCaseModule = module {
-     factory { GetBestStories(get()) }
+     factory { GetStories(get()) }
      factory { GetItems(get()) }
 }

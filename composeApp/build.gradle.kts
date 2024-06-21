@@ -55,6 +55,7 @@ kotlin {
             implementation(libs.navigator.screen.model)
             implementation(libs.navigator.transitions)
             implementation(libs.navigator.koin)
+            implementation(libs.kotlinx.datetime)
         }
     }
 }
