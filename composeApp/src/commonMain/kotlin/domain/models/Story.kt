@@ -11,7 +11,7 @@ class Story(
     @SerialName("by")
     val userName: String,
     @SerialName("descendants")
-    val countOfComment: Long,
+    val countOfComment: Int,
     @SerialName("id")
     val id: Long,
     @SerialName("kids")

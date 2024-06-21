@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -38,14 +40,19 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
-import domain.models.Ask
 import domain.models.Category
 import domain.models.Item
-import domain.models.Job
-import domain.models.Poll
-import domain.models.Story
+import domain.models.getCommentCount
+import domain.models.getFormatedTime
+import domain.models.getPoint
+import domain.models.getTitle
+import domain.models.getUrl
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.chevron_down
+import hackernewskmp.composeapp.generated.resources.clock
+import hackernewskmp.composeapp.generated.resources.link
+import hackernewskmp.composeapp.generated.resources.message
+import io.ktor.http.Url
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapNotNull
 import org.jetbrains.compose.resources.painterResource
@@ -159,10 +166,10 @@ fun PaginatedItemList(
         if (isLoading && items.isEmpty()) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
         }
-        PullToRefreshContainer(refreshState, Modifier.align(Alignment.TopCenter))
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
             items(items.size) { index ->
                 ItemRowWidget(items[index])
+                HorizontalDivider(thickness = 6.dp, color = MaterialTheme.colorScheme.surfaceContainerLow)
             }
 
             if (items.isNotEmpty() && currentPage * viewModel.pageSize < itemIds.size) {
@@ -170,20 +177,71 @@ fun PaginatedItemList(
                 item { ItemLoadingWidget() }
             }
         }
+        PullToRefreshContainer(refreshState, Modifier.align(Alignment.TopCenter))
     }
-}
-
-private fun Item.getTitle(): String = when (this) {
-    is Ask -> title
-    is Job -> title
-    is Poll -> title
-    is Story -> title
-    else -> throw IllegalStateException("Unsupported item type")
 }
 
 @Composable
 fun ItemRowWidget(item: Item) {
-    Text(item.getTitle())
+    Column(
+        Modifier.fillMaxWidth()
+            .clickable { }
+    ) {
+        Spacer(Modifier.size(6.dp))
+        Text(
+            item.getTitle(),
+            Modifier.padding(horizontal = 8.dp),
+            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+            fontFamily = MaterialTheme.typography.headlineSmall.fontFamily
+        )
+        item.getUrl()?.let { url ->
+            Row {
+                Icon(
+                    painter = painterResource(Res.drawable.link),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 8.dp)
+                        .align(Alignment.CenterVertically)
+                )
+                Text(
+                    Url(url).host,
+                    Modifier.padding(horizontal = 4.dp),
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                )
+            }
+
+        }
+        Row {
+            Text(
+                "${item.getPoint()} points",
+                Modifier.padding(start = 8.dp),
+                fontSize = MaterialTheme.typography.bodySmall.fontSize
+            )
+            item.getCommentCount()?.let { count ->
+                Icon(
+                    painter = painterResource(Res.drawable.message),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 12.dp).align(Alignment.CenterVertically)
+                )
+                Text(
+                    count.toString(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+            Icon(
+                painter = painterResource(Res.drawable.clock),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(start = 12.dp).align(Alignment.CenterVertically)
+            )
+            Text(
+                item.getFormatedTime(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        }
+        Spacer(Modifier.size(6.dp))
+    }
 }
 
 @Composable

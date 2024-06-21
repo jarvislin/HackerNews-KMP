@@ -11,7 +11,7 @@ class Ask(
     @SerialName("by")
     val userName: String,
     @SerialName("descendants")
-    val countOfComment: Long,
+    val countOfComment: Int? = null,
     @SerialName("id")
     val id: Long,
     @SerialName("kids")
@@ -23,5 +23,5 @@ class Ask(
     @SerialName("time")
     val time: Long,
     @SerialName("title")
-    val title: String,
+    val title: String?= null,
 ) : Item()
