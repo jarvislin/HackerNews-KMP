@@ -40,16 +40,13 @@ import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
 import domain.models.Ask
 import domain.models.Category
-import domain.models.Comment
 import domain.models.Item
 import domain.models.Job
 import domain.models.Poll
-import domain.models.PollOption
 import domain.models.Story
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.chevron_down
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
@@ -134,6 +131,7 @@ fun PaginatedItemList(
     val itemIds by viewModel.itemIds
     val items by viewModel.items
     val currentPage by viewModel.currentPage
+    val isLoading by viewModel.isLoading
 
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
@@ -157,17 +155,19 @@ fun PaginatedItemList(
         }
     }
 
-
-
     Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
+        if (isLoading && items.isEmpty()) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
         PullToRefreshContainer(refreshState, Modifier.align(Alignment.TopCenter))
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
             items(items.size) { index ->
-                ItemRow(items[index])
+                ItemRowWidget(items[index])
             }
 
-            if (currentPage * viewModel.pageSize < itemIds.size) {
-                item { ItemLoading() }
+            if (items.isNotEmpty() && currentPage * viewModel.pageSize < itemIds.size) {
+                // only display the loading item if there are items loaded
+                item { ItemLoadingWidget() }
             }
         }
     }
@@ -182,12 +182,12 @@ private fun Item.getTitle(): String = when (this) {
 }
 
 @Composable
-fun ItemRow(item: Item) {
+fun ItemRowWidget(item: Item) {
     Text(item.getTitle())
 }
 
 @Composable
-fun ItemLoading() {
+fun ItemLoadingWidget() {
     Row(modifier = Modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.surfaceContainerLow)) {
         CircularProgressIndicator(
             strokeWidth = 2.dp,
