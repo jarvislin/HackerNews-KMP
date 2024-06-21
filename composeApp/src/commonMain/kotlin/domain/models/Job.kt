@@ -15,11 +15,11 @@ class Job(
     @SerialName("score")
     val score: Int,
     @SerialName("text")
-    val text: String,
+    val text: String? = null,
     @SerialName("time")
     val time: Long,
     @SerialName("title")
     val title: String,
     @SerialName("url")
-    val url: String,
+    val url: String? = null,
 ) : Item()
