@@ -188,7 +188,15 @@ fun ItemRowWidget(item: Item) {
     val navigator = LocalNavigator.currentOrThrow
     Column(
         Modifier.fillMaxWidth()
-            .clickable { navigator.push(DetailsScreen()) }
+            .clickable {
+                navigator.push(
+                    if (item.getUrl() != null) {
+                        WebScreen(item)
+                    } else {
+                        DetailsScreen(item)
+                    }
+                )
+            }
     ) {
         Spacer(Modifier.size(6.dp))
         Text(
