@@ -40,6 +40,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import domain.models.Category
 import domain.models.Item
 import domain.models.getCommentCount
@@ -183,9 +185,10 @@ fun PaginatedItemList(
 
 @Composable
 fun ItemRowWidget(item: Item) {
+    val navigator = LocalNavigator.currentOrThrow
     Column(
         Modifier.fillMaxWidth()
-            .clickable { }
+            .clickable { navigator.push(DetailsScreen()) }
     ) {
         Spacer(Modifier.size(6.dp))
         Text(
