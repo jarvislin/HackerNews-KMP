@@ -57,6 +57,7 @@ kotlin {
             implementation(libs.navigator.koin)
             implementation(libs.kotlinx.datetime)
             implementation(libs.compose.webview.multiplatform)
+            implementation(libs.richeditor.compose)
         }
     }
 }

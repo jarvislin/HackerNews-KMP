@@ -21,6 +21,7 @@ kotlinxDatetime = "0.6.0"
 ktor = "2.3.9"
 ktorClientLogging = "2.3.7"
 napier = "2.7.1"
+richeditorCompose = "1.0.0-rc05-k2"
 voyager = "1.0.0"
 
 [libraries]
@@ -48,6 +49,7 @@ navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "v
 navigator-screen-model = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
 navigator-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
 navigator-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
+richeditor-compose = { module = "com.mohamedrejeb.richeditor:richeditor-compose", version.ref = "richeditorCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
