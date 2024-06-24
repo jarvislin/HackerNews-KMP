@@ -45,7 +45,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import domain.models.Category
 import domain.models.Item
 import domain.models.getCommentCount
-import domain.models.getFormatedTime
+import domain.models.getFormatedDiffTime
 import domain.models.getPoint
 import domain.models.getTitle
 import domain.models.getUrl
@@ -57,6 +57,7 @@ import hackernewskmp.composeapp.generated.resources.message
 import io.ktor.http.Url
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
@@ -186,14 +187,15 @@ fun PaginatedItemList(
 @Composable
 fun ItemRowWidget(item: Item) {
     val navigator = LocalNavigator.currentOrThrow
+    val json = koinInject<Json>()
     Column(
         Modifier.fillMaxWidth()
             .clickable {
                 navigator.push(
                     if (item.getUrl() != null) {
-                        WebScreen(item)
+                        WebScreen(item.toJson(json))
                     } else {
-                        DetailsScreen(item)
+                        DetailsScreen(item.toJson(json))
                     }
                 )
             }
@@ -247,7 +249,7 @@ fun ItemRowWidget(item: Item) {
                 modifier = Modifier.padding(start = 12.dp).align(Alignment.CenterVertically)
             )
             Text(
-                item.getFormatedTime(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                item.getFormatedDiffTime(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
                 modifier = Modifier.padding(start = 4.dp)
             )
         }

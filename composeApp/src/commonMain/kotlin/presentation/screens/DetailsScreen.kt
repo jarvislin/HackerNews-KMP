@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,11 +26,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import domain.models.Comment
@@ -43,6 +47,7 @@ import domain.models.getTitle
 import domain.models.getUrl
 import domain.models.getUserName
 import hackernewskmp.composeapp.generated.resources.Res
+import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.link
 import hackernewskmp.composeapp.generated.resources.message
 import io.github.aakira.napier.Napier
@@ -57,20 +62,30 @@ class DetailsScreen(private val itemJson: String) : Screen {
     override fun Content() {
         val json = koinInject<Json>()
         val item = Item.from(json, itemJson) ?: throw IllegalStateException("Item is null")
-        MaterialTheme {
-            Scaffold(topBar = { DetailsTopBar() }) { padding ->
-                CommentList(item, padding, getScreenModel<DetailsViewModel>())
-            }
+        Scaffold(topBar = { DetailsTopBar() }) { padding ->
+            CommentList(item, padding, getScreenModel<DetailsViewModel>())
         }
     }
-
-
 }
 
 @Composable
 fun DetailsTopBar() {
+    val navigator = LocalNavigator.currentOrThrow
     TopAppBar(
-        title = { },
+        title = {
+            Text(
+                text = "Details",
+                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = { navigator.pop() }) {
+                Icon(
+                    painter = painterResource(Res.drawable.arrow_back),
+                    contentDescription = "Back",
+                )
+            }
+        }
     )
 }
 
@@ -100,12 +115,16 @@ fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsView
         items(comments.size) { index ->
             CommentWidget(comments[index])
         }
+        if (comments.size < (item.getCommentCount() ?: 0)) {
+            item { ItemLoadingWidget() }
+        }
     }
 }
 
 @Composable
 fun ContentWidget(item: Item) {
     val richTextState = rememberRichTextState()
+    richTextState.config.linkColor = MaterialTheme.colorScheme.tertiary
     richTextState.setHtml(item.getText() ?: "No content")
 
     Column {
@@ -179,6 +198,12 @@ fun CommentWidget(comment: Comment) {
     val paddingStart = 16.dp * comment.depth
     val localUriHandler = LocalUriHandler.current
     val richTextState = rememberRichTextState()
+    richTextState.config.apply {
+        linkColor = MaterialTheme.colorScheme.tertiary
+        codeSpanStrokeColor = Color.Transparent
+        codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+        codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
+    }
     richTextState.setHtml(comment.getText() ?: "No content")
 
     val uriHandler by remember {
@@ -203,7 +228,7 @@ fun CommentWidget(comment: Comment) {
             CompositionLocalProvider(LocalUriHandler provides uriHandler) {
                 RichText(
                     state = richTextState,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                     fontFamily = MaterialTheme.typography.titleMedium.fontFamily
                 )

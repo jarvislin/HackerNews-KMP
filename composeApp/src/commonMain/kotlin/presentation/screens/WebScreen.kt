@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import com.multiplatform.webview.web.WebView
@@ -27,11 +28,15 @@ import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.reload
 import hackernewskmp.composeapp.generated.resources.world
 import io.ktor.http.Url
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 
-class WebScreen(private val item: Item) : Screen {
+class WebScreen(private val itemJson: String) : Screen {
     @Composable
     override fun Content() {
+        val json = koinInject<Json>()
+        val item = Item.from(json, itemJson) ?: throw IllegalStateException("Item is null")
         val snackBarHostState = remember { SnackbarHostState() }
         val webViewState = rememberWebViewState(item.getUrl()!!)
         val webViewNavigator = rememberWebViewNavigator()
@@ -59,16 +64,21 @@ class WebScreen(private val item: Item) : Screen {
 
 @Composable
 fun BottomBar(item: Item, webViewNavigator: WebViewNavigator) {
+    val localUriHandler = LocalUriHandler.current
     BottomAppBar(modifier = Modifier.height(56.dp)) {
         Row {
             Spacer(modifier = Modifier.weight(1f))
-            IconButton(modifier = Modifier.align(Alignment.CenterVertically), onClick = { webViewNavigator.reload() }) {
+            IconButton(modifier = Modifier.align(Alignment.CenterVertically),
+                onClick = { webViewNavigator.reload() }) {
                 Icon(
                     painterResource(Res.drawable.reload),
                     contentDescription = "Reload the web page"
                 )
             }
-            IconButton(modifier = Modifier.align(Alignment.CenterVertically), onClick = { }) {
+            IconButton(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                onClick = { localUriHandler.openUri(item.getUrl() ?: throw IllegalStateException("URL is null")) },
+            ) {
                 Icon(
                     painterResource(Res.drawable.world),
                     contentDescription = "Open with the default browser"
