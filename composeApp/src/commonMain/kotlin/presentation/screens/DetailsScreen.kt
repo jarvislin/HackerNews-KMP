@@ -2,6 +2,7 @@
 
 package presentation.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -50,6 +55,7 @@ import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.link
 import hackernewskmp.composeapp.generated.resources.message
+import hackernewskmp.composeapp.generated.resources.user_circle
 import io.github.aakira.napier.Napier
 import io.ktor.http.Url
 import kotlinx.serialization.json.Json
@@ -90,11 +96,6 @@ fun DetailsTopBar() {
 }
 
 @Composable
-fun PreviewWidget(url: String) {
-    Text(text = url)
-}
-
-@Composable
 fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsViewModel = koinInject()) {
     val comments by viewModel.comments
     val listState = rememberLazyListState()
@@ -124,14 +125,20 @@ fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsView
 @Composable
 fun ContentWidget(item: Item) {
     val richTextState = rememberRichTextState()
-    richTextState.config.linkColor = MaterialTheme.colorScheme.tertiary
+    richTextState.config.apply {
+        linkColor = MaterialTheme.colorScheme.tertiary
+        codeSpanStrokeColor = Color.Transparent
+        codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+        codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
+    }
     richTextState.setHtml(item.getText() ?: "No content")
 
-    Column {
+    Column(Modifier.padding(horizontal = 16.dp)) {
         Text(
-            text = item.getTitle(), Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            text = item.getTitle(), Modifier.padding(vertical = 8.dp),
             fontSize = MaterialTheme.typography.titleLarge.fontSize,
-            fontFamily = MaterialTheme.typography.titleLarge.fontFamily
+            fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
+            lineHeight = 28.sp
         )
         item.getUrl()?.let { url ->
             Row {
@@ -139,8 +146,7 @@ fun ContentWidget(item: Item) {
                     painter = painterResource(Res.drawable.link),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(start = 16.dp)
-                        .align(Alignment.CenterVertically)
+                    modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 Text(
                     Url(url).host,
@@ -151,9 +157,7 @@ fun ContentWidget(item: Item) {
         }
 
         Row(modifier = Modifier.padding(vertical = 8.dp)) {
-            Card(
-                modifier = Modifier.padding(start = 16.dp),
-            ) {
+            Card {
                 Text(
                     text = "${item.getPoint()} points",
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
@@ -178,24 +182,37 @@ fun ContentWidget(item: Item) {
                 }
             }
         }
-        Text(
-            text = "${item.getUserName()} published on ${item.getFormatedTime()}",
-            modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp),
-            fontSize = MaterialTheme.typography.bodyMedium.fontSize
-        )
+        Row(modifier = Modifier.padding(top = 8.dp)) {
+            Icon(
+                painter = painterResource(Res.drawable.user_circle),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            Text(
+                modifier = Modifier.padding(start = 4.dp),
+                text = item.getUserName(),
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize
+            )
+        }
         RichText(
             state = richTextState,
-            fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
+            fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
             fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-            fontStyle = MaterialTheme.typography.bodyLarge.fontStyle,
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
         )
+        Text(
+            text = item.getFormatedTime(),
+            modifier = Modifier.padding(bottom = 12.dp),
+            fontSize = MaterialTheme.typography.bodyMedium.fontSize
+        )
+        HorizontalDivider()
     }
 }
 
 @Composable
 fun CommentWidget(comment: Comment) {
-    val paddingStart = 16.dp * comment.depth
+    val paddingStart = 12.dp * (comment.depth + 1)
     val localUriHandler = LocalUriHandler.current
     val richTextState = rememberRichTextState()
     richTextState.config.apply {
@@ -213,32 +230,33 @@ fun CommentWidget(comment: Comment) {
             }
         })
     }
-
-    Card(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            .padding(start = paddingStart)
-            .fillMaxWidth(),
-    ) {
-        Column {
+    Column(Modifier.padding(horizontal = 16.dp).padding(start = paddingStart, top = 12.dp)) {
+        Row {
+            Icon(
+                painter = painterResource(Res.drawable.user_circle),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
             Text(
                 text = comment.getUserName(),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize
-            )
-            CompositionLocalProvider(LocalUriHandler provides uriHandler) {
-                RichText(
-                    state = richTextState,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                    fontFamily = MaterialTheme.typography.titleMedium.fontFamily
-                )
-            }
-            Text(
-                text = "${comment.getFormatedTime()}",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                modifier = Modifier.padding(start = 4.dp),
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
             )
         }
+        CompositionLocalProvider(LocalUriHandler provides uriHandler) {
+            RichText(
+                modifier = Modifier.padding(vertical = 12.dp),
+                state = richTextState,
+                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+            )
+        }
+        Text(
+            text = comment.getFormatedTime(),
+            modifier = Modifier.padding(bottom = 12.dp),
+            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+        )
+        HorizontalDivider()
     }
 }
 

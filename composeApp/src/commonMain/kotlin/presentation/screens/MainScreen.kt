@@ -226,7 +226,7 @@ fun ItemRowWidget(item: Item) {
                 painter = painterResource(Res.drawable.clock),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically)
+                modifier = Modifier.padding(start = if (item.getUrl() == null) 0.dp else 8.dp).align(Alignment.CenterVertically)
             )
             Text(
                 item.getFormatedDiffTime(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
