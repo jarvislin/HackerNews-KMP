@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
  * Represents a story.
  */
 @Serializable
-class Story(
+@SerialName("story")
+data class Story(
     @SerialName("by")
     val userName: String,
     @SerialName("descendants")
@@ -15,13 +16,15 @@ class Story(
     @SerialName("id")
     val id: Long,
     @SerialName("kids")
-    val commentIds: List<Long>? = null,
+    val commentIds: List<Long> = emptyList(),
     @SerialName("score")
     val score: Int,
     @SerialName("time")
     val time: Long,
     @SerialName("title")
     val title: String,
+    @SerialName("text")
+    val text: String? = null,
     @SerialName("url")
-    val url: String,
+    val url: String? = null,
 ) : Item()
