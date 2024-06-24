@@ -8,26 +8,28 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +39,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
@@ -87,33 +90,32 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
     var expanded by remember { mutableStateOf(false) }
     var selectedItem by viewModel.currentCategory
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(56.dp)
             .background(MaterialTheme.colorScheme.surface)
-            .padding(8.dp)
             .zIndex(1f)
-            .clickable(onClick = { expanded = true })
     ) {
-        ElevatedButton(
-            onClick = { expanded = true },
-            modifier = Modifier.wrapContentSize()
-        ) {
-            Row {
-                Text(
-                    text = selectedItem.title,
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
-                )
-                Icon(
-                    modifier = Modifier.padding(start = 6.dp).align(Alignment.CenterVertically),
-                    painter = painterResource(Res.drawable.chevron_down),
-                    tint = MaterialTheme.colorScheme.primary,
-                    contentDescription = null,
-                )
-            }
+        Row(modifier = Modifier.fillMaxHeight().clickable { expanded = true }) {
+            Spacer(Modifier.size(16.dp))
+            Text(
+                modifier = Modifier.align(Alignment.CenterVertically),
+                text = selectedItem.title,
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                fontFamily = MaterialTheme.typography.headlineSmall.fontFamily,
+            )
+            Icon(
+                modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically),
+                painter = painterResource(Res.drawable.chevron_down),
+                tint = MaterialTheme.colorScheme.primary,
+                contentDescription = null,
+            )
+            Spacer(Modifier.size(16.dp))
         }
-
         DropdownMenu(
+            offset = DpOffset(16.dp, 0.dp),
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
@@ -172,7 +174,6 @@ fun PaginatedItemList(
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
             items(items.size) { index ->
                 ItemRowWidget(items[index])
-                HorizontalDivider(thickness = 6.dp, color = MaterialTheme.colorScheme.surfaceContainerLow)
             }
 
             if (items.isNotEmpty() && currentPage * viewModel.pageSize < itemIds.size) {
@@ -200,21 +201,20 @@ fun ItemRowWidget(item: Item) {
                 )
             }
     ) {
-        Spacer(Modifier.size(6.dp))
+        Spacer(Modifier.size(12.dp))
         Text(
             item.getTitle(),
-            Modifier.padding(horizontal = 8.dp),
+            Modifier.padding(horizontal = 16.dp),
             fontSize = MaterialTheme.typography.bodyLarge.fontSize,
             fontFamily = MaterialTheme.typography.headlineSmall.fontFamily
         )
-        item.getUrl()?.let { url ->
-            Row {
+        Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+            item.getUrl()?.let { url ->
                 Icon(
                     painter = painterResource(Res.drawable.link),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(start = 8.dp)
-                        .align(Alignment.CenterVertically)
+                    modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 Text(
                     Url(url).host,
@@ -222,38 +222,49 @@ fun ItemRowWidget(item: Item) {
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
                 )
             }
-
-        }
-        Row {
-            Text(
-                "${item.getPoint()} points",
-                Modifier.padding(start = 8.dp),
-                fontSize = MaterialTheme.typography.bodySmall.fontSize
-            )
-            item.getCommentCount()?.let { count ->
-                Icon(
-                    painter = painterResource(Res.drawable.message),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(start = 12.dp).align(Alignment.CenterVertically)
-                )
-                Text(
-                    count.toString(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
             Icon(
                 painter = painterResource(Res.drawable.clock),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 12.dp).align(Alignment.CenterVertically)
+                modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically)
             )
             Text(
                 item.getFormatedDiffTime(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
                 modifier = Modifier.padding(start = 4.dp)
             )
         }
-        Spacer(Modifier.size(6.dp))
+        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Card {
+                Text(
+                    text = "${item.getPoint()} points",
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
+            }
+            item.getCommentCount()?.let {
+                CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
+                    Card(
+                        modifier = Modifier.padding(start = 8.dp),
+                        onClick = { navigator.push(DetailsScreen(item.toJson(json))) }
+                    ) {
+                        Row {
+                            Icon(
+                                painter = painterResource(Res.drawable.message),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically)
+                            )
+                            Text(
+                                text = "${item.getCommentCount()}",
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.size(12.dp))
     }
 }
 
