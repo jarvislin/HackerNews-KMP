@@ -18,9 +18,9 @@ sealed class Category(val path: String, val index: Int, val title: String) {
     }
 }
 
-data object TopStories : Category("topstories.json", 0, "Top")
-data object NewStories : Category("newstories.json", 1, "New")
-data object BestStories : Category("beststories.json", 2, "Best")
-data object AskStories : Category("askstories.json", 3, "Ask")
-data object ShowStories : Category("showstories.json", 4, "Show")
-data object JobStories : Category("jobstories.json", 5, "Job")
+data object TopStories : Category("topstories.json", 0, "Top Stories")
+data object NewStories : Category("newstories.json", 1, "New Stories")
+data object BestStories : Category("beststories.json", 2, "Best Stories")
+data object AskStories : Category("askstories.json", 3, "Ask Stories")
+data object ShowStories : Category("showstories.json", 4, "Show Stories")
+data object JobStories : Category("jobstories.json", 5, "Job Stories")

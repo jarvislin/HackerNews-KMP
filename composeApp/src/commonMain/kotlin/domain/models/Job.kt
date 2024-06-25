@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
  * Represents a job.
  */
 @Serializable
-class Job(
+@SerialName("job")
+data class Job(
     @SerialName("by")
     val userName: String,
     @SerialName("id")

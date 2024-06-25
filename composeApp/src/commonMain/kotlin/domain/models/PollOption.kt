@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
  * Represents a poll option.
  */
 @Serializable
-class PollOption(
+@SerialName("pollopt")
+data class PollOption(
     @SerialName("by")
     val userName: String,
     @SerialName("id")

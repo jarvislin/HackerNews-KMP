@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
  * Represents an Ask item.
  */
 @Serializable
-class Ask(
+@SerialName("ask")
+data class Ask(
     @SerialName("by")
     val userName: String,
     @SerialName("descendants")
@@ -15,7 +16,7 @@ class Ask(
     @SerialName("id")
     val id: Long,
     @SerialName("kids")
-    val commentIds: List<Long>? = null,
+    val commentIds: List<Long> = emptyList(),
     @SerialName("score")
     val score: Int,
     @SerialName("text")
@@ -23,5 +24,5 @@ class Ask(
     @SerialName("time")
     val time: Long,
     @SerialName("title")
-    val title: String?= null,
+    val title: String,
 ) : Item()
