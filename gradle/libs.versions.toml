@@ -21,7 +21,7 @@ kotlinxDatetime = "0.6.0"
 ktor = "2.3.9"
 ktorClientLogging = "2.3.7"
 napier = "2.7.1"
-richeditorCompose = "1.0.0-rc05-k2"
+richeditorCompose = "1.0.0-rc05"
 voyager = "1.0.0"
 
 [libraries]
