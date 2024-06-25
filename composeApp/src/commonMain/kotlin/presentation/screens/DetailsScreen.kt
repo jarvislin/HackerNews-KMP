@@ -2,17 +2,20 @@
 
 package presentation.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,8 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -56,7 +57,6 @@ import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.link
 import hackernewskmp.composeapp.generated.resources.message
 import hackernewskmp.composeapp.generated.resources.user_circle
-import io.github.aakira.napier.Napier
 import io.ktor.http.Url
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
@@ -123,7 +123,7 @@ fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsView
 }
 
 @Composable
-fun ContentWidget(item: Item) {
+fun ContentWidget(item: Item, viewModel: DetailsViewModel = koinInject()) {
     val richTextState = rememberRichTextState()
     richTextState.config.apply {
         linkColor = MaterialTheme.colorScheme.tertiary
@@ -131,7 +131,6 @@ fun ContentWidget(item: Item) {
         codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
         codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
     }
-    richTextState.setHtml(item.getText() ?: "No content")
 
     Column(Modifier.padding(horizontal = 16.dp)) {
         Text(
@@ -140,23 +139,7 @@ fun ContentWidget(item: Item) {
             fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
             lineHeight = 28.sp
         )
-        item.getUrl()?.let { url ->
-            Row {
-                Icon(
-                    painter = painterResource(Res.drawable.link),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                )
-                Text(
-                    Url(url).host,
-                    Modifier.padding(horizontal = 4.dp),
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                )
-            }
-        }
-
-        Row(modifier = Modifier.padding(vertical = 8.dp)) {
+        Row(modifier = Modifier.padding(bottom = 8.dp)) {
             Card {
                 Text(
                     text = "${item.getPoint()} points",
@@ -195,18 +178,52 @@ fun ContentWidget(item: Item) {
                 fontSize = MaterialTheme.typography.bodyMedium.fontSize
             )
         }
-        RichText(
-            state = richTextState,
-            fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
-            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
-        )
+        item.getText()?.let { text ->
+            richTextState.setHtml(text)
+            RichText(
+                state = richTextState,
+                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
+                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+            )
+        }
+        item.getUrl()?.let { LinkWidget(item) }
         Text(
             text = item.getFormatedTime(),
-            modifier = Modifier.padding(bottom = 12.dp),
+            modifier = Modifier.padding(bottom = 12.dp).padding(top = 8.dp),
             fontSize = MaterialTheme.typography.bodyMedium.fontSize
         )
         HorizontalDivider()
+    }
+}
+
+@Composable
+fun LinkWidget(item: Item) {
+    val navigator = LocalNavigator.currentOrThrow
+    val json = koinInject<Json>()
+
+    Spacer(modifier = Modifier.height(8.dp))
+    Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
+        modifier = Modifier.height(40.dp),
+        shape = RoundedCornerShape(20.dp),
+        onClick = { navigator.push(WebScreen(item.toJson(json))) }) {
+        Row(modifier = Modifier.fillMaxHeight()) {
+            Spacer(modifier = Modifier.size(16.dp))
+            Icon(
+                painter = painterResource(Res.drawable.link),
+                contentDescription = "Link",
+                modifier = Modifier.size(18.dp).align(Alignment.CenterVertically),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Text(
+                modifier = Modifier.padding(start = 8.dp, end = 24.dp).align(Alignment.CenterVertically),
+                fontSize = MaterialTheme.typography.labelLarge.fontSize,
+                fontFamily = MaterialTheme.typography.labelLarge.fontFamily,
+                fontWeight = MaterialTheme.typography.labelLarge.fontWeight,
+                text = Url(item.getUrl()!!).host,
+            )
+        }
     }
 }
 
