@@ -17,13 +17,21 @@ class MainViewModel(private val getStories: GetStories, private val getItems: Ge
     val currentCategory = mutableStateOf<Category>(TopStories)
     val pageSize = 20
     val isLoading = mutableStateOf(false)
+    val error = mutableStateOf<Throwable?>(null)
 
     fun loadNextPage() {
         if (isLoading.value) return
+        if (error.value != null) return
+
         screenModelScope.launch {
             isLoading.value = true
             if (itemIds.value.isEmpty()) {
-                itemIds.value += getStories(currentCategory.value)
+                val storyIds = getStories(currentCategory.value)
+                if (storyIds.isSuccess) {
+                    itemIds.value += storyIds.getOrThrow()
+                } else {
+                    error.value = storyIds.exceptionOrNull()
+                }
             }
             val nextPageIds = itemIds.value.drop(currentPage.value * pageSize).take(pageSize)
             val newItems = getItems(nextPageIds)
@@ -38,5 +46,6 @@ class MainViewModel(private val getStories: GetStories, private val getItems: Ge
         itemIds.value = emptyList()
         items.value = emptyList()
         currentPage.value = 0
+        error.value = null
     }
 }
