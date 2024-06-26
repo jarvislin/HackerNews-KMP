@@ -22,13 +22,17 @@ class ItemRepositoryImpl(
     private val apiHandler: ApiHandler
 ) : ItemRepository {
     override suspend fun fetchItems(ids: List<Long>): List<Item> = coroutineScope {
-        ids.map { async { fetchItem(it) } }.awaitAll().filterNotNull()
+        // warn: it might cause issues if the item is not found
+        ids.map { async { fetchItem(it) } }.awaitAll().mapNotNull { it.getOrNull() }
     }
 
-    private suspend fun fetchItem(id: Long): Item? {
+    private suspend fun fetchItem(id: Long): Result<Item?> {
         val result = apiHandler.run { client.get("$API_URL/item/$id.json") }
-        return if (result.isSuccess) Item.from(json, result.getOrThrow())
-        else null // TODO: it ignores the error, it should handle the error
+        return if (result.isSuccess) {
+            Result.success(Item.from(json, result.getOrThrow()))
+        } else {
+            Result.failure(result.exceptionOrNull()!!)
+        }
     }
 
     override suspend fun fetchStories(category: Category): Result<List<Long>> =
@@ -36,14 +40,19 @@ class ItemRepositoryImpl(
             client.get("$API_URL/${category.path}")
         }
 
-    override suspend fun fetchComments(depth: Int, ids: List<Long>): Flow<Comment> = flow {
+    override suspend fun fetchComments(depth: Int, ids: List<Long>): Flow<Result<Comment>> = flow {
         ids.forEach { id ->
-            val comment = fetchItem(id) as? Comment
-            if (comment != null) {
-                emit(comment.copy(depth = depth))
-                if (comment.commentIds.isNotEmpty()) {
-                    fetchComments(depth + 1, comment.commentIds).collect { emit(it) }
+            val result = fetchItem(id)
+            if (result.isSuccess) {
+                val comment = result.getOrThrow() as? Comment
+                if (comment != null) {
+                    emit(Result.success(comment.copy(depth = depth)))
+                    if (comment.commentIds.isNotEmpty()) {
+                        fetchComments(depth + 1, comment.commentIds).collect { emit(it) }
+                    }
                 }
+            } else {
+                emit(Result.failure(result.exceptionOrNull()!!))
             }
         }
     }
