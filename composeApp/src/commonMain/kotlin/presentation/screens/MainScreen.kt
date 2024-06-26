@@ -25,6 +25,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -43,8 +46,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import domain.models.AppError
 import domain.models.Category
 import domain.models.Item
 import domain.models.getCommentCount
@@ -68,8 +73,12 @@ import presentation.viewmodels.MainViewModel
 class MainScreen : Screen {
     @Composable
     override fun Content() {
+        val viewModel = getScreenModel<MainViewModel>()
+        val error by viewModel.error
+        val snackBarHostState = remember { SnackbarHostState() }
         Scaffold(
-            topBar = { AppTopBar() }
+            topBar = { AppTopBar() },
+            snackbarHost = { SnackbarHost(snackBarHostState) }
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -80,6 +89,15 @@ class MainScreen : Screen {
                     )
             ) {
                 PaginatedItemList()
+            }
+        }
+
+        error?.let {
+            LaunchedEffect(Unit) {
+                val result = snackBarHostState.showSnackbar(it.message ?: "An error occurred", "Retry")
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.reset()
+                }
             }
         }
     }

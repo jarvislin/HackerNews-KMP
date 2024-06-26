@@ -46,5 +46,6 @@ class MainViewModel(private val getStories: GetStories, private val getItems: Ge
         itemIds.value = emptyList()
         items.value = emptyList()
         currentPage.value = 0
+        error.value = null
     }
 }
