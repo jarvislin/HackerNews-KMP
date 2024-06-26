@@ -1,5 +1,6 @@
 package modules
 
+import data.remote.ApiHandler
 import domain.models.Ask
 import domain.models.Comment
 import domain.models.Item
@@ -45,4 +46,5 @@ val dataModule = module {
             }
         }.also { Napier.base(DebugAntilog()) }
     }
+    single { ApiHandler }
 }
