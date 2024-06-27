@@ -24,7 +24,7 @@ class RawItem(
     val parentId: Long? = null,
     @SerialName("poll")
     val pollId: Long? = null,
-    @SerialName("kid")
+    @SerialName("kids")
     val commentIds: List<Long>? = null,
     @SerialName("url")
     val url: String? = null,
