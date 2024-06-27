@@ -42,6 +42,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -69,6 +71,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
+import ui.trimmedTextStyle
 
 class MainScreen : Screen {
     @Composable
@@ -219,44 +222,54 @@ fun ItemRowWidget(item: Item) {
                 )
             }
     ) {
-        Spacer(Modifier.size(12.dp))
+        Spacer(Modifier.height(12.dp))
         Text(
             item.getTitle(),
             Modifier.padding(horizontal = 16.dp),
             fontSize = MaterialTheme.typography.bodyLarge.fontSize,
             fontFamily = MaterialTheme.typography.headlineSmall.fontFamily
         )
-        Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             item.getUrl()?.let { url ->
                 Icon(
                     painter = painterResource(Res.drawable.link),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 Text(
                     Url(url).host,
                     Modifier.padding(horizontal = 4.dp),
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    style = trimmedTextStyle
                 )
             }
             Icon(
                 painter = painterResource(Res.drawable.clock),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = if (item.getUrl() == null) 0.dp else 8.dp).align(Alignment.CenterVertically)
+                modifier = Modifier.padding(start = if (item.getUrl() == null) 0.dp else 8.dp)
             )
             Text(
                 item.getFormatedDiffTime(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                modifier = Modifier.padding(start = 4.dp)
+                modifier = Modifier.padding(start = 4.dp),
+                style = trimmedTextStyle
             )
         }
-        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Spacer(Modifier.height(8.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
             Card {
                 Text(
                     text = "${item.getPoint()} points",
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    modifier = Modifier.padding(horizontal = 8.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    style = trimmedTextStyle
                 )
             }
             item.getCommentCount()?.let {
@@ -265,17 +278,20 @@ fun ItemRowWidget(item: Item) {
                         modifier = Modifier.padding(start = 8.dp),
                         onClick = { navigator.push(DetailsScreen(item.toJson(json))) }
                     ) {
-                        Row {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+                        ) {
                             Icon(
                                 painter = painterResource(Res.drawable.message),
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically)
                             )
                             Text(
                                 text = "${item.getCommentCount()}",
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+                                modifier = Modifier.padding(start = 4.dp),
+                                style = trimmedTextStyle
                             )
                         }
                     }
