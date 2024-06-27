@@ -15,14 +15,14 @@ data class Poll(
     val countOfComment: Int,
     @SerialName("id")
     val id: Long,
-    @SerialName("kid")
+    @SerialName("kids")
     val commentIds: List<Long>,
     @SerialName("parts")
     val optionIds: List<Long>,
     @SerialName("score")
     val score: Int,
     @SerialName("text")
-    val text: String,
+    val text: String? = null,
     @SerialName("time")
     val time: Long,
     @SerialName("title")

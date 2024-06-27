@@ -8,5 +8,5 @@ import domain.repositories.ItemRepository
  */
 class GetItems(private val repository: ItemRepository) {
     suspend operator fun invoke(ids: List<Long>): List<Item> =
-        repository.fetchItems(ids)
+        repository.fetchItems(ids).mapNotNull { it.getOrNull() }
 }

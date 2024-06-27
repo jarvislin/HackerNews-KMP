@@ -2,10 +2,12 @@
 
 package presentation.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,6 +50,8 @@ import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import domain.models.Comment
 import domain.models.Item
+import domain.models.Poll
+import domain.models.PollOption
 import domain.models.getCommentCount
 import domain.models.getCommentIds
 import domain.models.getFormatedTime
@@ -117,11 +121,17 @@ class DetailsScreen(private val itemJson: String) : Screen {
     @Composable
     fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsViewModel) {
         val comments by viewModel.comments
+        val pollOptions by viewModel.pollOptions
         val listState = rememberLazyListState()
-        val isLoading by viewModel.isLoading
+        val isLoadingPollOptions by viewModel.isLoadingPollOptions
+        val isLoadingComments by viewModel.isLoadingComments
         val error by viewModel.error
 
-        if (isLoading.not() && error == null) {
+        if (item is Poll && isLoadingPollOptions.not() && error == null && pollOptions.isEmpty()) {
+            viewModel.loadPollOptions(item.optionIds)
+        }
+
+        if (isLoadingComments.not() && error == null && item.getCommentIds().isNotEmpty()) {
             viewModel.loadComments(item.getCommentIds())
         }
 
@@ -132,18 +142,16 @@ class DetailsScreen(private val itemJson: String) : Screen {
                 bottom = paddingValues.calculateBottomPadding()
             )
         ) {
-            item { ContentWidget(item) }
+            item { ContentWidget(item, pollOptions) }
             items(comments.size) { index ->
                 CommentWidget(comments[index])
             }
-            if (comments.size < (item.getCommentCount() ?: 0)) {
-                item { ItemLoadingWidget() }
-            }
+            if (comments.size < item.getCommentIds().size) item { ItemLoadingWidget() }
         }
     }
 
     @Composable
-    fun ContentWidget(item: Item) {
+    fun ContentWidget(item: Item, pollOptions: List<PollOption>) {
         val richTextState = rememberRichTextState()
         richTextState.config.apply {
             linkColor = MaterialTheme.colorScheme.tertiary
@@ -198,6 +206,13 @@ class DetailsScreen(private val itemJson: String) : Screen {
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize
                 )
             }
+            if (item is Poll) {
+                Column {
+                    pollOptions.forEachIndexed { index: Int, option: PollOption ->
+                        PollOptionWidget(option, pollOptions.size, index)
+                    }
+                }
+            }
             item.getText()?.let { text ->
                 richTextState.setHtml(text)
                 RichText(
@@ -214,6 +229,32 @@ class DetailsScreen(private val itemJson: String) : Screen {
                 fontSize = MaterialTheme.typography.bodyMedium.fontSize
             )
             HorizontalDivider()
+        }
+    }
+
+    @Composable
+    fun PollOptionWidget(option: PollOption, size: Int, index: Int) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Card(colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)) {
+                Box(
+                    modifier = Modifier.padding(horizontal = 8.dp).defaultMinSize(minWidth = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "${option.score}",
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    )
+                }
+            }
+            Text(
+                text = option.text,
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                modifier = Modifier.padding(start = 10.dp)
+            )
+        }
+        if (index < size - 1) {
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 
