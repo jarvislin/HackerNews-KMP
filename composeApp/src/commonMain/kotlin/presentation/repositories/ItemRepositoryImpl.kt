@@ -21,9 +21,8 @@ class ItemRepositoryImpl(
     private val json: Json,
     private val apiHandler: ApiHandler
 ) : ItemRepository {
-    override suspend fun fetchItems(ids: List<Long>): List<Item> = coroutineScope {
-        // warn: it might cause issues if the item is not found
-        ids.map { async { fetchItem(it) } }.awaitAll().mapNotNull { it.getOrNull() }
+    override suspend fun fetchItems(ids: List<Long>): List<Result<Item?>> = coroutineScope {
+        ids.map { async { fetchItem(it) } }.awaitAll()
     }
 
     private suspend fun fetchItem(id: Long): Result<Item?> {
