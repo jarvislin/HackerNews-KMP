@@ -70,6 +70,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.DetailsViewModel
+import ui.trimmedTextStyle
 
 class DetailsScreen(private val itemJson: String) : Screen {
     @Composable
@@ -172,23 +173,27 @@ class DetailsScreen(private val itemJson: String) : Screen {
                     Text(
                         text = "${item.getPoint()} points",
                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        modifier = Modifier.padding(horizontal = 8.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = trimmedTextStyle
                     )
                 }
                 Card(
                     modifier = Modifier.padding(start = 8.dp),
                 ) {
-                    Row {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(
                             painter = painterResource(Res.drawable.message),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically)
                         )
                         Text(
                             text = "${item.getCommentCount()}",
                             fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+                            modifier = Modifier.padding(start = 4.dp),
+                            style = trimmedTextStyle
                         )
                     }
                 }
@@ -203,7 +208,8 @@ class DetailsScreen(private val itemJson: String) : Screen {
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
                     text = item.getUserName(),
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    style = trimmedTextStyle
                 )
             }
             if (item is Poll) {
@@ -269,19 +275,20 @@ class DetailsScreen(private val itemJson: String) : Screen {
             modifier = Modifier.height(40.dp),
             shape = RoundedCornerShape(20.dp),
             onClick = { navigator.push(WebScreen(item.toJson(json))) }) {
-            Row(modifier = Modifier.fillMaxHeight()) {
+            Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.size(16.dp))
                 Icon(
                     painter = painterResource(Res.drawable.link),
                     contentDescription = "Link",
-                    modifier = Modifier.size(18.dp).align(Alignment.CenterVertically),
+                    modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 Text(
-                    modifier = Modifier.padding(start = 8.dp, end = 24.dp).align(Alignment.CenterVertically),
+                    modifier = Modifier.padding(start = 8.dp, end = 24.dp),
                     fontSize = MaterialTheme.typography.labelLarge.fontSize,
                     fontFamily = MaterialTheme.typography.labelLarge.fontFamily,
                     fontWeight = MaterialTheme.typography.labelLarge.fontWeight,
+                    style = trimmedTextStyle,
                     text = Url(item.getUrl()!!).host,
                 )
             }
@@ -320,6 +327,7 @@ class DetailsScreen(private val itemJson: String) : Screen {
                     text = comment.getUserName(),
                     modifier = Modifier.padding(start = 4.dp),
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    style = trimmedTextStyle
                 )
             }
             CompositionLocalProvider(LocalUriHandler provides uriHandler) {
