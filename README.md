@@ -1,6 +1,6 @@
 # Hacker News KMP
 
-This is a project designed to showcase Kotlin Multiplatform Compose's capabilities, which is targeting to Android and iOS.
+This project is designed to showcase the capabilities of **Kotlin Multiplatform Compose** by implementing both Android and iOS apps. The aim is to demonstrate how effectively this framework can create cross-platform applications and to learn new concepts that I hadn't encountered before.
 
 ![screenshots](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/fb88b1fc-a0ca-484d-807b-52aceaf26760)
 
