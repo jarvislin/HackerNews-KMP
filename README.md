@@ -1,3 +1,8 @@
+![Static Badge](https://img.shields.io/badge/Platform-iOS-blue?style=flat)
+![Static Badge](https://img.shields.io/badge/Platform-Android-green?style=flat)
+![GitHub License](https://img.shields.io/github/license/jarvislin/HackerNews-KMP?style=flat)
+
+
 # Hacker News KMP
 
 This project is designed to showcase the capabilities of **Kotlin Multiplatform Compose** by implementing both Android and iOS apps. The aim is to demonstrate how effectively this framework can create cross-platform applications and to learn new concepts that I hadn't encountered before.
