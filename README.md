@@ -1,3 +1,8 @@
+![Static Badge](https://img.shields.io/badge/Platform-iOS-blue?style=flat)
+![Static Badge](https://img.shields.io/badge/Platform-Android-green?style=flat)
+![GitHub License](https://img.shields.io/github/license/jarvislin/HackerNews-KMP?style=flat)
+
+
 # Hacker News KMP
 
 This project is designed to showcase the capabilities of **Kotlin Multiplatform Compose** by implementing both Android and iOS apps. The aim is to demonstrate how effectively this framework can create cross-platform applications and to learn new concepts that I hadn't encountered before.
@@ -26,4 +31,11 @@ For the full list of dependencies used in the project, please check [this file](
 
 ## Architecture
 
-Architecture follows **MVVM** and **Clean Architecture**.
+Architecture follows **[MVVM](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel)** and **[Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)**.
+
+![clean_architecture_mvvm](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/4ab2f81b-fcef-4f0b-8668-17cb2c1b5ada)
+
+
+## License
+
+[Mozilla Public License Version 2.0](https://github.com/jarvislin/HackerNews-KMP/blob/main/LICENSE)
