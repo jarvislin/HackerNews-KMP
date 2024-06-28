@@ -2,7 +2,7 @@
 
 This project is designed to showcase the capabilities of **Kotlin Multiplatform Compose** by implementing both Android and iOS apps. The aim is to demonstrate how effectively this framework can create cross-platform applications and to learn new concepts that I hadn't encountered before.
 
-![screenshots](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/fb88b1fc-a0ca-484d-807b-52aceaf26760)
+![hn_16_9](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/bc29705a-6e69-474c-8453-91485d99b458)
 
 
 ## Download
