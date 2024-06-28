@@ -33,7 +33,8 @@ For the full list of dependencies used in the project, please check [this file](
 
 Architecture follows **[MVVM](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel)** and **[Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)**.
 
-![clean_architecture_mvvm](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/d57845f8-bbf6-4878-81ff-b9fac408674d)
+![clean_architecture_mvvm](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/4ab2f81b-fcef-4f0b-8668-17cb2c1b5ada)
+
 
 ## License
 
