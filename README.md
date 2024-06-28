@@ -11,25 +11,18 @@ This project is designed to showcase the capabilities of **Kotlin Multiplatform 
 <a href="https://apps.apple.com/tw/app/hacker-news-reader-kmp/id6504872454"><img src="https://github.com/jarvislin/HackerNews-KMP/assets/3839951/7631ba39-5713-40fb-a036-d866c939d993" height=80/></a>
 
 
-
 ## Tech Stack
-1. Material 3
-2. Koin
-3. voyager
-4. napier
-5. ktor
-6. richeditor
-7. compose-webview-multiplatform
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - `commonMain` is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    `iosMain` would be the right folder for such calls.
+1. Entire project written in [Kotlin](https://kotlinlang.org/)
+2. UI developed with [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/), following [Material 3](https://m3.material.io/) guidelines
+3. Asynchronous tasks handled with [Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
+4. Dependency injection managed with [Koin](https://github.com/InsertKoinIO/koin)
+5. API interactions handled by [Ktor Client](https://github.com/ktorio/ktor)
+6. Time conversions using [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)
+7. Serialization managed by [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
 
-* `/iosApp` contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform, 
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+For the full list of dependencies used in the project, please check [this file](https://github.com/jarvislin/HackerNews-KMP/blob/main/gradle/libs.versions.toml).
 
+## Architecture
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+Architecture follows **MVVM** and **Clean Architecture**.
