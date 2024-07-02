@@ -231,6 +231,7 @@ class DetailsScreen(private val itemJson: String) : Screen {
             }
             if (item is Poll) {
                 Column {
+                    Spacer(modifier = Modifier.height(8.dp))
                     pollOptions.forEachIndexed { index: Int, option: PollOption ->
                         PollOptionWidget(option, pollOptions.size, index)
                     }
@@ -260,13 +261,14 @@ class DetailsScreen(private val itemJson: String) : Screen {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Card(colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)) {
                 Box(
-                    modifier = Modifier.padding(horizontal = 8.dp).defaultMinSize(minWidth = 24.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp).defaultMinSize(minWidth = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "${option.score}",
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        style = trimmedTextStyle,
                     )
                 }
             }
