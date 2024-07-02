@@ -10,7 +10,6 @@ import modules.viewModelModule
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 import presentation.screens.MainScreen
-import ui.appTypography
 import ui.darkScheme
 import ui.lightScheme
 
@@ -32,7 +31,7 @@ fun App() {
         }
 
         MaterialTheme(
-            typography = appTypography(),
+            typography = getPlatform().getTypography(),
             colorScheme = colors
         ) {
             Navigator(MainScreen()) {
