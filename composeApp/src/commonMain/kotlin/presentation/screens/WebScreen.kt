@@ -26,11 +26,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.WebViewNavigator
+import com.multiplatform.webview.web.WebViewState
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
 import domain.models.Item
 import domain.models.getCommentCount
 import domain.models.getUrl
+import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.message
@@ -40,6 +42,7 @@ import io.ktor.http.Url
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import presentation.widgets.SwipeContainer
 
 class WebScreen(private val itemJson: String) : Screen {
     @Composable
@@ -49,18 +52,17 @@ class WebScreen(private val itemJson: String) : Screen {
         val snackBarHostState = remember { SnackbarHostState() }
         val webViewState = rememberWebViewState(item.getUrl()!!)
         val webViewNavigator = rememberWebViewNavigator()
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackBarHostState) },
-            topBar = { WebTopBar(item, webViewNavigator) },
-        ) { paddings ->
-            WebView(
-                navigator = webViewNavigator,
-                state = webViewState,
-                modifier = Modifier.fillMaxSize().padding(
-                    top = paddings.calculateTopPadding(),
-                    bottom = paddings.calculateBottomPadding()
-                )
-            )
+        val navigator = LocalNavigator.currentOrThrow
+
+        if (getPlatform().isAndroid()) {
+            ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState)
+        } else {
+            SwipeContainer(
+                onSwipeToDismiss = { navigator.pop() },
+                swipeThreshold = getPlatform().getScreenWidth() / 3.5f,
+            ) {
+                ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState)
+            }
         }
 
         // handle the message when the URL is a pdf file
@@ -71,6 +73,26 @@ class WebScreen(private val itemJson: String) : Screen {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ScaffoldContent(
+    snackBarHostState: SnackbarHostState,
+    item: Item, webViewNavigator: WebViewNavigator, webViewState: WebViewState
+) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) },
+        topBar = { WebTopBar(item, webViewNavigator) },
+    ) { paddings ->
+        WebView(
+            navigator = webViewNavigator,
+            state = webViewState,
+            modifier = Modifier.fillMaxSize().padding(
+                top = paddings.calculateTopPadding(),
+                bottom = paddings.calculateBottomPadding()
+            )
+        )
     }
 }
 

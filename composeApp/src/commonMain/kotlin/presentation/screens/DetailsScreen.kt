@@ -60,6 +60,7 @@ import domain.models.getText
 import domain.models.getTitle
 import domain.models.getUrl
 import domain.models.getUserName
+import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.link
@@ -70,6 +71,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.DetailsViewModel
+import presentation.widgets.SwipeContainer
 import ui.trimmedTextStyle
 
 class DetailsScreen(private val itemJson: String) : Screen {
@@ -80,12 +82,17 @@ class DetailsScreen(private val itemJson: String) : Screen {
         val snackBarHostState = remember { SnackbarHostState() }
         val json = koinInject<Json>()
         val item = Item.from(json, itemJson) ?: throw IllegalStateException("Item is null")
+        val navigator = LocalNavigator.currentOrThrow
 
-        Scaffold(
-            topBar = { DetailsTopBar() },
-            snackbarHost = { SnackbarHost(snackBarHostState) }
-        ) { padding ->
-            CommentList(item, padding, viewModel)
+        if (getPlatform().isAndroid()) {
+            ScaffoldContent(snackBarHostState, viewModel, item)
+        } else {
+            SwipeContainer(
+                onSwipeToDismiss = { navigator.pop() },
+                swipeThreshold = getPlatform().getScreenWidth() / 3.5f,
+            ) {
+                ScaffoldContent(snackBarHostState, viewModel, item)
+            }
         }
 
         error?.let {
@@ -95,6 +102,16 @@ class DetailsScreen(private val itemJson: String) : Screen {
                     viewModel.reset()
                 }
             }
+        }
+    }
+
+    @Composable
+    fun ScaffoldContent(snackBarHostState: SnackbarHostState, viewModel: DetailsViewModel, item: Item) {
+        Scaffold(
+            topBar = { DetailsTopBar() },
+            snackbarHost = { SnackbarHost(snackBarHostState) }
+        ) { padding ->
+            CommentList(item, padding, viewModel)
         }
     }
 
