@@ -16,6 +16,10 @@ This project is designed to showcase the capabilities of **Kotlin Multiplatform 
 <a href="https://play.google.com/store/apps/details?id=com.jarvislin.hackernews"><img src="https://github.com/jarvislin/HackerNews-KMP/assets/3839951/a6ed5faf-aaad-44a7-8910-fc0593343d6f" height=79/></a>
 <a href="https://apps.apple.com/tw/app/hacker-news-reader-kmp/id6504872454"><img src="https://github.com/jarvislin/HackerNews-KMP/assets/3839951/7631ba39-5713-40fb-a036-d866c939d993" height=80/></a>
 
+## Article
+
+[How to Develop and Publish an App on Two Platforms Within a Week?](https://medium.com/p/918cea37dda2)
+
 
 ## Tech Stack
 
@@ -33,8 +37,7 @@ For the full list of dependencies used in the project, please check [this file](
 
 Architecture follows **[MVVM](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel)** and **[Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)**.
 
-![clean_architecture_mvvm](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/4ab2f81b-fcef-4f0b-8668-17cb2c1b5ada)
-
+![clean_architecture_mvvm](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/a3823b81-1e99-4457-bf7c-fcbe5051ed34)
 
 ## License
 
