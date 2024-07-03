@@ -2,9 +2,17 @@
 
 package presentation.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,7 +25,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,6 +48,7 @@ import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.message
 import hackernewskmp.composeapp.generated.resources.reload
 import hackernewskmp.composeapp.generated.resources.world
+import io.github.aakira.napier.Napier
 import io.ktor.http.Url
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
@@ -50,9 +61,10 @@ class WebScreen(private val itemJson: String) : Screen {
         val json = koinInject<Json>()
         val item = Item.from(json, itemJson) ?: throw IllegalStateException("Item is null")
         val snackBarHostState = remember { SnackbarHostState() }
-        val webViewState = rememberWebViewState(item.getUrl()!!)
         val webViewNavigator = rememberWebViewNavigator()
         val navigator = LocalNavigator.currentOrThrow
+        val rawUrl = item.getUrl() ?: throw IllegalStateException("URL is null")
+        val webViewState = rememberWebViewState(getUrl(rawUrl))
 
         if (getPlatform().isAndroid()) {
             ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState)
@@ -65,14 +77,15 @@ class WebScreen(private val itemJson: String) : Screen {
             }
         }
 
-        // handle the message when the URL is a pdf file
-        item.getUrl()?.let {
-            Url(it).pathSegments.lastOrNull()?.takeIf { it.endsWith(".pdf") }?.let {
-                LaunchedEffect(Unit) {
-                    snackBarHostState.showSnackbar("PDF file is unsupported", "Dismiss")
-                }
-            }
+        webViewState.errorsForCurrentRequest.forEach { error ->
+            Napier.e("WebView error: ${error.description}")
         }
+    }
+
+    private fun getUrl(rawUrl: String): String {
+        val isPdf = Url(rawUrl).pathSegments.lastOrNull()?.endsWith(".pdf") ?: false
+        return if (isPdf && getPlatform().isAndroid()) "https://docs.google.com/gview?embedded=true&url=$rawUrl"
+        else rawUrl
     }
 }
 
