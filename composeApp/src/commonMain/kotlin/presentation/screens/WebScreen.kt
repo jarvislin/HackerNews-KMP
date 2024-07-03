@@ -94,18 +94,29 @@ fun ScaffoldContent(
     snackBarHostState: SnackbarHostState,
     item: Item, webViewNavigator: WebViewNavigator, webViewState: WebViewState
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = { WebTopBar(item, webViewNavigator) },
     ) { paddings ->
-        WebView(
-            navigator = webViewNavigator,
-            state = webViewState,
-            modifier = Modifier.fillMaxSize().padding(
-                top = paddings.calculateTopPadding(),
-                bottom = paddings.calculateBottomPadding()
+        Box {
+            WebView(
+                navigator = webViewNavigator,
+                state = webViewState,
+                modifier = Modifier.fillMaxSize().padding(
+                    top = paddings.calculateTopPadding(),
+                    bottom = paddings.calculateBottomPadding()
+                )
             )
-        )
+            if (webViewState.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+        }
+        Spacer(modifier = Modifier.fillMaxHeight().width(20.dp)
+            .background(Color.Transparent)
+            .clickable(interactionSource = interactionSource, indication = null) {
+                // this is a workaround to fix the issue with the WebView not being swipe-able on iOS
+            })
     }
 }
 
