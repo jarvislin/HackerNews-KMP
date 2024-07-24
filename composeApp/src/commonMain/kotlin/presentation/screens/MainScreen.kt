@@ -94,7 +94,8 @@ class MainScreen : Screen {
 
         error?.let {
             LaunchedEffect(Unit) {
-                val result = snackBarHostState.showSnackbar(it.message ?: "An error occurred", "Retry")
+                val result =
+                    snackBarHostState.showSnackbar(it.message ?: "An error occurred", "Retry")
                 if (result == SnackbarResult.ActionPerformed) {
                     viewModel.reset()
                 }
@@ -301,7 +302,10 @@ fun ItemRowWidget(item: Item) {
 
 @Composable
 fun ItemLoadingWidget() {
-    Row(modifier = Modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.surfaceContainerLow)) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .background(color = MaterialTheme.colorScheme.surfaceContainerLow)
+    ) {
         CircularProgressIndicator(
             strokeWidth = 2.dp,
             modifier = Modifier.padding(16.dp).size(12.dp)

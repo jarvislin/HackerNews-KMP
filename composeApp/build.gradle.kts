@@ -61,6 +61,10 @@ kotlin {
             implementation(libs.compose.webview.multiplatform)
             implementation(libs.richeditor.compose)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation("app.cash.turbine:turbine:0.7.0")
+        }
     }
 }
 
