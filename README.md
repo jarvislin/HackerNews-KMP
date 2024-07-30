@@ -34,9 +34,13 @@ For the full list of dependencies used in the project, please check [this file](
 
 ## Architecture
 
-Architecture follows **[MVVM](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel)** and **[Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)**.
+Architecture follows MVVM and Clean Architecture.
 
 ![clean_architecture_mvvm](https://github.com/jarvislin/HackerNews-KMP/assets/3839951/a3823b81-1e99-4457-bf7c-fcbe5051ed34)
+
+## Contribution
+
+You're welcome to submit PRs to this repo! I'm using Git Flow, so please create a feature branch for your work. When you're ready to submit a PR, set the base branch to develop. I'll review it as soon as I can.
 
 ## License
 
