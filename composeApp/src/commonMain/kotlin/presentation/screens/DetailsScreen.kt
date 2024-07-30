@@ -62,26 +62,37 @@ import domain.models.getUrl
 import domain.models.getUserName
 import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
+import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.arrow_back
+import hackernewskmp.composeapp.generated.resources.back
+import hackernewskmp.composeapp.generated.resources.details
 import hackernewskmp.composeapp.generated.resources.link
 import hackernewskmp.composeapp.generated.resources.message
+import hackernewskmp.composeapp.generated.resources.no_comment
+import hackernewskmp.composeapp.generated.resources.points
+import hackernewskmp.composeapp.generated.resources.retry
 import hackernewskmp.composeapp.generated.resources.user_circle
 import io.ktor.http.Url
 import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.DetailsViewModel
 import presentation.widgets.SwipeContainer
 import ui.trimmedTextStyle
+import utils.Constants
 
 class DetailsScreen(private val itemJson: String) : Screen {
+
     @Composable
     override fun Content() {
         val viewModel = getScreenModel<DetailsViewModel>()
         val error by viewModel.error
         val snackBarHostState = remember { SnackbarHostState() }
         val json = koinInject<Json>()
-        val item = Item.from(json, itemJson) ?: throw IllegalStateException("Item is null")
+        val item = Item.from(json, itemJson)
+            ?: throw IllegalStateException(Constants.ITEM_NULL_MESSAGE)
         val navigator = LocalNavigator.currentOrThrow
 
         if (getPlatform().isAndroid()) {
@@ -97,7 +108,10 @@ class DetailsScreen(private val itemJson: String) : Screen {
 
         error?.let {
             LaunchedEffect(Unit) {
-                val result = snackBarHostState.showSnackbar(it.message ?: "An error occurred", "Retry")
+                val result = snackBarHostState.showSnackbar(
+                    message = it.message ?: getString(Res.string.an_error_occurred),
+                    actionLabel = getString(Res.string.retry)
+                )
                 if (result == SnackbarResult.ActionPerformed) {
                     viewModel.reset()
                 }
@@ -106,7 +120,11 @@ class DetailsScreen(private val itemJson: String) : Screen {
     }
 
     @Composable
-    fun ScaffoldContent(snackBarHostState: SnackbarHostState, viewModel: DetailsViewModel, item: Item) {
+    fun ScaffoldContent(
+        snackBarHostState: SnackbarHostState,
+        viewModel: DetailsViewModel,
+        item: Item
+    ) {
         Scaffold(
             topBar = { DetailsTopBar() },
             snackbarHost = { SnackbarHost(snackBarHostState) }
@@ -121,7 +139,7 @@ class DetailsScreen(private val itemJson: String) : Screen {
         TopAppBar(
             title = {
                 Text(
-                    text = "Details",
+                    text = stringResource(Res.string.details),
                     fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
                 )
             },
@@ -129,7 +147,7 @@ class DetailsScreen(private val itemJson: String) : Screen {
                 IconButton(onClick = { navigator.pop() }) {
                     Icon(
                         painter = painterResource(Res.drawable.arrow_back),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.back)
                     )
                 }
             }
@@ -188,7 +206,7 @@ class DetailsScreen(private val itemJson: String) : Screen {
             Row(modifier = Modifier.padding(bottom = 8.dp)) {
                 Card {
                     Text(
-                        text = "${item.getPoint()} points",
+                        text = stringResource(Res.string.points, item.getPoint()),
                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = trimmedTextStyle
@@ -261,7 +279,8 @@ class DetailsScreen(private val itemJson: String) : Screen {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Card(colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)) {
                 Box(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp).defaultMinSize(minWidth = 24.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        .defaultMinSize(minWidth = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -294,7 +313,10 @@ class DetailsScreen(private val itemJson: String) : Screen {
             modifier = Modifier.height(40.dp),
             shape = RoundedCornerShape(20.dp),
             onClick = { navigator.push(WebScreen(item.toJson(json))) }) {
-            Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Spacer(modifier = Modifier.size(16.dp))
                 Icon(
                     painter = painterResource(Res.drawable.link),
@@ -325,7 +347,7 @@ class DetailsScreen(private val itemJson: String) : Screen {
             codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
             codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
         }
-        richTextState.setHtml(comment.getText() ?: "No content")
+        richTextState.setHtml(comment.getText() ?: stringResource(Res.string.no_comment))
 
         val uriHandler by remember {
             mutableStateOf(object : UriHandler {
@@ -366,7 +388,7 @@ class DetailsScreen(private val itemJson: String) : Screen {
     }
 
     private fun decodeUrl(url: String): String {
-        val entityPattern = Regex("&#x([0-9A-Fa-f]+);")
+        val entityPattern = Regex(Constants.REGEX_PATTERN)
         return url.replace(entityPattern) { matchResult ->
             val codePoint = matchResult.groupValues[1].toInt(16)
             CharArray(1) { codePoint.toChar() }.concatToString()
