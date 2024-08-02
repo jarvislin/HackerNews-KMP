@@ -23,8 +23,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,26 +45,40 @@ import domain.models.getUrl
 import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.arrow_back
+import hackernewskmp.composeapp.generated.resources.browse_comments
+import hackernewskmp.composeapp.generated.resources.go_back
 import hackernewskmp.composeapp.generated.resources.message
+import hackernewskmp.composeapp.generated.resources.open_with_the_default_browser
 import hackernewskmp.composeapp.generated.resources.reload
+import hackernewskmp.composeapp.generated.resources.reload_web_page
+import hackernewskmp.composeapp.generated.resources.webview_error
 import hackernewskmp.composeapp.generated.resources.world
 import io.github.aakira.napier.Napier
 import io.ktor.http.Url
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import presentation.widgets.SwipeContainer
+import utils.Constants
 
 class WebScreen(private val itemJson: String) : Screen {
+
     @Composable
     override fun Content() {
         val json = koinInject<Json>()
-        val item = Item.from(json, itemJson) ?: throw IllegalStateException("Item is null")
+        val item = Item.from(json, itemJson)
+            ?: throw IllegalStateException(Constants.ITEM_NULL_MESSAGE)
         val snackBarHostState = remember { SnackbarHostState() }
         val webViewNavigator = rememberWebViewNavigator()
         val navigator = LocalNavigator.currentOrThrow
-        val rawUrl = item.getUrl() ?: throw IllegalStateException("URL is null")
+        val rawUrl = item.getUrl()
+            ?: throw IllegalStateException(Constants.URL_NULL_MESSAGE)
         val webViewState = rememberWebViewState(getUrl(rawUrl))
+        val scope = rememberCoroutineScope()
 
         if (getPlatform().isAndroid()) {
             ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState)
@@ -78,14 +92,18 @@ class WebScreen(private val itemJson: String) : Screen {
         }
 
         webViewState.errorsForCurrentRequest.forEach { error ->
-            Napier.e("WebView error: ${error.description}")
+            scope.launch(Dispatchers.Main) {
+                Napier.e(getString(Res.string.webview_error, error.description))
+            }
         }
     }
 
     private fun getUrl(rawUrl: String): String {
-        val isPdf = Url(rawUrl).pathSegments.lastOrNull()?.endsWith(".pdf") ?: false
-        return if (isPdf && getPlatform().isAndroid()) "https://docs.google.com/gview?embedded=true&url=$rawUrl"
-        else rawUrl
+        val isPdf = Url(rawUrl).pathSegments.lastOrNull()
+            ?.endsWith(Constants.PDF_EXTENSION) ?: false
+        return if (isPdf && getPlatform().isAndroid()) {
+            Constants.URL_GOOGLE_DOCS + rawUrl
+        } else rawUrl
     }
 }
 
@@ -125,6 +143,7 @@ fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
     val localUriHandler = LocalUriHandler.current
     val navigator = LocalNavigator.currentOrThrow
     val json = koinInject<Json>()
+
     TopAppBar(
         title = {
             Text(
@@ -138,7 +157,7 @@ fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
             IconButton(onClick = { navigator.pop() }) {
                 Icon(
                     painter = painterResource(Res.drawable.arrow_back),
-                    contentDescription = "Go back"
+                    contentDescription = stringResource(Res.string.go_back)
                 )
             }
         },
@@ -146,24 +165,30 @@ fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
             IconButton(onClick = { webViewNavigator.reload() }) {
                 Icon(
                     painter = painterResource(Res.drawable.reload),
-                    contentDescription = "Reload the web page"
+                    contentDescription = stringResource(Res.string.reload_web_page)
                 )
             }
             IconButton(
-                onClick = { localUriHandler.openUri(item.getUrl() ?: throw IllegalStateException("URL is null")) },
+                onClick = {
+                    localUriHandler.openUri(
+                        item.getUrl() ?: throw IllegalStateException(
+                            Constants.URL_NULL_MESSAGE
+                        )
+                    )
+                },
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.world),
-                    contentDescription = "Open with the default browser"
+                    contentDescription = stringResource(Res.string.open_with_the_default_browser)
                 )
             }
-            item.getCommentCount()?.let { count ->
+            item.getCommentCount()?.let {
                 IconButton(
                     onClick = { navigator.push(DetailsScreen(item.toJson(json))) },
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.message),
-                        contentDescription = "Browse comments",
+                        contentDescription = stringResource(Res.string.browse_comments),
                         modifier = Modifier.size(24.dp)
                     )
                 }

@@ -57,6 +57,7 @@ import domain.models.getPoint
 import domain.models.getTitle
 import domain.models.getUrl
 import hackernewskmp.composeapp.generated.resources.Res
+import hackernewskmp.composeapp.generated.resources.*
 import hackernewskmp.composeapp.generated.resources.chevron_down
 import hackernewskmp.composeapp.generated.resources.clock
 import hackernewskmp.composeapp.generated.resources.link
@@ -65,7 +66,9 @@ import io.ktor.http.Url
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
 import ui.trimmedTextStyle
@@ -94,7 +97,10 @@ class MainScreen : Screen {
 
         error?.let {
             LaunchedEffect(Unit) {
-                val result = snackBarHostState.showSnackbar(it.message ?: "An error occurred", "Retry")
+                val result = snackBarHostState.showSnackbar(
+                    message = it.message ?: getString(Res.string.an_error_occurred),
+                    actionLabel = getString(Res.string.retry)
+                )
                 if (result == SnackbarResult.ActionPerformed) {
                     viewModel.reset()
                 }
@@ -263,7 +269,7 @@ fun ItemRowWidget(item: Item) {
         ) {
             Card {
                 Text(
-                    text = "${item.getPoint()} points",
+                    text = stringResource(Res.string.points, item.getPoint()),
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     style = trimmedTextStyle
@@ -285,7 +291,7 @@ fun ItemRowWidget(item: Item) {
                                 tint = MaterialTheme.colorScheme.onSurface,
                             )
                             Text(
-                                text = "${item.getCommentCount()}",
+                                text = item.getCommentCount().toString(),
                                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                                 modifier = Modifier.padding(start = 4.dp),
                                 style = trimmedTextStyle
@@ -307,7 +313,7 @@ fun ItemLoadingWidget() {
             modifier = Modifier.padding(16.dp).size(12.dp)
         )
         Text(
-            text = "Loading...",
+            text = stringResource(Res.string.loading),
             fontStyle = MaterialTheme.typography.bodySmall.fontStyle,
             fontSize = MaterialTheme.typography.bodySmall.fontSize,
             modifier = Modifier.align(Alignment.CenterVertically)
