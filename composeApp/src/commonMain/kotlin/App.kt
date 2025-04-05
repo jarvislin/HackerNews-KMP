@@ -16,8 +16,8 @@ import ui.lightScheme
 @Composable
 @Preview
 fun App() {
-    KoinApplication(moduleList = {
-        listOf(
+    KoinApplication(application = {
+        modules(
             dataModule,
             repositoryModule,
             useCaseModule,
