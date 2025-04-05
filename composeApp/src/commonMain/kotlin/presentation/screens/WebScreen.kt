@@ -31,9 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.WebViewState
@@ -57,65 +54,72 @@ import io.github.aakira.napier.Napier
 import io.ktor.http.Url
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import presentation.viewmodels.MainViewModel
 import presentation.widgets.SwipeContainer
 import utils.Constants
 
-class WebScreen(private val itemJson: String) : Screen {
+@Serializable
+data class WebRoute(
+    @SerialName("id")
+    val id: Long
+)
 
-    @Composable
-    override fun Content() {
-        val json = koinInject<Json>()
-        val item = Item.from(json, itemJson)
-            ?: throw IllegalStateException(Constants.ITEM_NULL_MESSAGE)
-        val snackBarHostState = remember { SnackbarHostState() }
-        val webViewNavigator = rememberWebViewNavigator()
-        val navigator = LocalNavigator.currentOrThrow
-        val rawUrl = item.getUrl()
-            ?: throw IllegalStateException(Constants.URL_NULL_MESSAGE)
-        val webViewState = rememberWebViewState(getUrl(rawUrl))
-        val scope = rememberCoroutineScope()
+@Composable
+fun WebScreen(itemId: Long, onBack: () -> Unit, onClickComment: (Item) -> Unit) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    val webViewNavigator = rememberWebViewNavigator()
+    val mainViewModel = koinInject<MainViewModel>()
+    val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
+    val rawUrl = item.getUrl()
+        ?: throw IllegalStateException(Constants.URL_NULL_MESSAGE)
+    val webViewState = rememberWebViewState(getUrl(rawUrl))
+    val scope = rememberCoroutineScope()
 
-        if (getPlatform().isAndroid()) {
-            ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState)
-        } else {
-            SwipeContainer(
-                onSwipeToDismiss = { navigator.pop() },
-                swipeThreshold = getPlatform().getScreenWidth() / 3.5f,
-            ) {
-                ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState)
-            }
-        }
-
-        webViewState.errorsForCurrentRequest.forEach { error ->
-            scope.launch(Dispatchers.Main) {
-                Napier.e(getString(Res.string.webview_error, error.description))
-            }
+    if (getPlatform().isAndroid()) {
+        ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState, onBack, onClickComment)
+    } else {
+        SwipeContainer(
+            onSwipeToDismiss = { onBack() },
+            swipeThreshold = getPlatform().getScreenWidth() / 3.5f,
+        ) {
+            ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState, onBack, onClickComment)
         }
     }
 
-    private fun getUrl(rawUrl: String): String {
-        val isPdf = Url(rawUrl).pathSegments.lastOrNull()
-            ?.endsWith(Constants.PDF_EXTENSION) ?: false
-        return if (isPdf && getPlatform().isAndroid()) {
-            Constants.URL_GOOGLE_DOCS + rawUrl
-        } else rawUrl
+    webViewState.errorsForCurrentRequest.forEach { error ->
+        scope.launch(Dispatchers.Main) {
+            Napier.e(getString(Res.string.webview_error, error.description))
+        }
     }
+
+
+}
+
+private fun getUrl(rawUrl: String): String {
+    val isPdf = Url(rawUrl).pathSegments.lastOrNull()
+        ?.endsWith(Constants.PDF_EXTENSION) ?: false
+    return if (isPdf && getPlatform().isAndroid()) {
+        Constants.URL_GOOGLE_DOCS + rawUrl
+    } else rawUrl
 }
 
 @Composable
 fun ScaffoldContent(
     snackBarHostState: SnackbarHostState,
-    item: Item, webViewNavigator: WebViewNavigator, webViewState: WebViewState
+    item: Item, webViewNavigator: WebViewNavigator, webViewState: WebViewState,
+    onBack: () -> Unit, onClickComment: (Item) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
-        topBar = { WebTopBar(item, webViewNavigator) },
+        topBar = { WebTopBar(item, webViewNavigator, onBack, onClickComment) },
     ) { paddings ->
         Box {
             WebView(
@@ -139,9 +143,8 @@ fun ScaffoldContent(
 }
 
 @Composable
-fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
+fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator, onBack: () -> Unit, onClickComment: (Item) -> Unit) {
     val localUriHandler = LocalUriHandler.current
-    val navigator = LocalNavigator.currentOrThrow
     val json = koinInject<Json>()
 
     TopAppBar(
@@ -154,7 +157,7 @@ fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { navigator.pop() }) {
+            IconButton(onClick = { onBack() }) {
                 Icon(
                     painter = painterResource(Res.drawable.arrow_back),
                     contentDescription = stringResource(Res.string.go_back)
@@ -184,7 +187,7 @@ fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
             }
             item.getCommentCount()?.let {
                 IconButton(
-                    onClick = { navigator.push(DetailsScreen(item.toJson(json))) },
+                    onClick = { onClickComment(item) },
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.message),

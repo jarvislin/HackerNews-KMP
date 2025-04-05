@@ -43,10 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.getScreenModel
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import domain.models.Category
 import domain.models.Item
 import domain.models.getCommentCount
@@ -65,7 +61,6 @@ import hackernewskmp.composeapp.generated.resources.points
 import hackernewskmp.composeapp.generated.resources.retry
 import io.ktor.http.Url
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -73,34 +68,32 @@ import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
 import ui.trimmedTextStyle
 
-class MainScreen : Screen {
-    @Composable
-    override fun Content() {
-        val viewModel = getScreenModel<MainViewModel>()
-        val state by viewModel.state
-        val snackBarHostState = remember { SnackbarHostState() }
-        Scaffold(
-            topBar = { AppTopBar() },
-            snackbarHost = { SnackbarHost(snackBarHostState) }
-        ) { padding ->
-            PullToRefreshBox(
-                isRefreshing = state.refreshing,
-                onRefresh = viewModel::onPullToRefresh,
-                modifier = Modifier.fillMaxSize().padding(padding)
-            ) {
-                PaginatedItemList()
-            }
+@Composable
+fun MainScreen(onClickItem: (Item) -> Unit, onClickComment: (Item) -> Unit) {
+    val viewModel = koinInject<MainViewModel>()
+    val state by viewModel.state
+    val snackBarHostState = remember { SnackbarHostState() }
+    Scaffold(
+        topBar = { AppTopBar() },
+        snackbarHost = { SnackbarHost(snackBarHostState) }
+    ) { padding ->
+        PullToRefreshBox(
+            isRefreshing = state.refreshing,
+            onRefresh = viewModel::onPullToRefresh,
+            modifier = Modifier.fillMaxSize().padding(padding)
+        ) {
+            PaginatedItemList(onClickItem, onClickComment)
         }
+    }
 
-        LaunchedEffect(Unit) {
-            if (state.error != null) {
-                val result = snackBarHostState.showSnackbar(
-                    message = state.error?.message ?: getString(Res.string.an_error_occurred),
-                    actionLabel = getString(Res.string.retry)
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    viewModel.reset()
-                }
+    LaunchedEffect(Unit) {
+        if (state.error != null) {
+            val result = snackBarHostState.showSnackbar(
+                message = state.error?.message ?: getString(Res.string.an_error_occurred),
+                actionLabel = getString(Res.string.retry)
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.reset()
             }
         }
     }
@@ -154,6 +147,8 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
 
 @Composable
 fun PaginatedItemList(
+    onClickItem: (Item) -> Unit,
+    onClickComment: (Item) -> Unit,
     viewModel: MainViewModel = koinInject()
 ) {
     val listState = rememberLazyListState()
@@ -179,7 +174,7 @@ fun PaginatedItemList(
         }
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
             items(state.items.size) { index ->
-                ItemRowWidget(state.items[index])
+                ItemRowWidget(state.items[index], onClickItem, onClickComment)
             }
 
             if (state.items.isNotEmpty() && state.currentPage * MainViewModel.PAGE_SIZE < state.itemIds.size) {
@@ -191,20 +186,9 @@ fun PaginatedItemList(
 }
 
 @Composable
-fun ItemRowWidget(item: Item) {
-    val navigator = LocalNavigator.currentOrThrow
-    val json = koinInject<Json>()
+fun ItemRowWidget(item: Item, onClickItem: (Item) -> Unit, onClickComment: (Item) -> Unit) {
     Column(
-        Modifier.fillMaxWidth()
-            .clickable {
-                navigator.push(
-                    if (item.getUrl() != null) {
-                        WebScreen(item.toJson(json))
-                    } else {
-                        DetailsScreen(item.toJson(json))
-                    }
-                )
-            }
+        Modifier.fillMaxWidth().clickable { onClickItem(item) }
     ) {
         Spacer(Modifier.height(12.dp))
         Text(
@@ -260,7 +244,7 @@ fun ItemRowWidget(item: Item) {
                 CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
                     Card(
                         modifier = Modifier.padding(start = 8.dp),
-                        onClick = { navigator.push(DetailsScreen(item.toJson(json))) }
+                        onClick = { onClickComment(item) }
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

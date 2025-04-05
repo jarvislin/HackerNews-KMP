@@ -2,8 +2,8 @@ package presentation.viewmodels
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import domain.interactors.GetComments
 import domain.interactors.GetPollOptions
 import domain.models.Comment
@@ -14,12 +14,12 @@ import kotlinx.coroutines.launch
 class DetailsViewModel(
     private val getComments: GetComments,
     private val getPollOptions: GetPollOptions
-) : ScreenModel {
+) : ViewModel() {
     private val _state = mutableStateOf(DetailsState())
     val state: State<DetailsState> = _state
 
     fun loadComments(ids: List<Long>) {
-        screenModelScope.launch {
+        viewModelScope.launch {
             _state.value = state.value.copy(loadingComments = true)
             getComments(ids).takeWhile { result ->
                 val shouldContinue = result.isSuccess
@@ -37,7 +37,7 @@ class DetailsViewModel(
     }
 
     fun loadPollOptions(optionIds: List<Long>) {
-        screenModelScope.launch {
+        viewModelScope.launch {
             _state.value = state.value.copy(loadingPollOptions = true)
             getPollOptions(optionIds).fold(
                 onSuccess = {

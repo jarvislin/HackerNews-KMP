@@ -16,7 +16,14 @@ import kotlin.time.DurationUnit
  */
 @Serializable
 sealed class Item {
-    fun toJson(json: Json): String = json.encodeToString(serializer(), this)
+    fun getItemId(): Long = when (this) {
+        is Ask -> id
+        is Comment -> id
+        is Job -> id
+        is Poll -> id
+        is PollOption -> id
+        is Story -> id
+    }
 
     companion object {
         private const val TYPE_STORY = "story"

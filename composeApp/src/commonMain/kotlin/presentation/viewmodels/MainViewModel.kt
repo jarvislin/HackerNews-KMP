@@ -2,8 +2,8 @@ package presentation.viewmodels
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import cafe.adriel.voyager.core.model.ScreenModel
-import cafe.adriel.voyager.core.model.screenModelScope
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import domain.interactors.GetItems
 import domain.interactors.GetStories
 import domain.models.Category
@@ -11,7 +11,7 @@ import domain.models.Item
 import domain.models.TopStories
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val getStories: GetStories, private val getItems: GetItems) : ScreenModel {
+class MainViewModel(private val getStories: GetStories, private val getItems: GetItems) : ViewModel() {
     private val _state = mutableStateOf(MainState())
     val state: State<MainState> = _state
 
@@ -19,7 +19,7 @@ class MainViewModel(private val getStories: GetStories, private val getItems: Ge
         if (state.value.loading) return
         if (state.value.error != null) return
 
-        screenModelScope.launch {
+        viewModelScope.launch {
             _state.value = state.value.copy(loading = true)
             if (state.value.itemIds.isEmpty()) {
                 getStories(state.value.currentCategory)
