@@ -15,7 +15,6 @@ import presentation.screens.DetailsScreen
 import presentation.screens.MainScreen
 import presentation.screens.WebRoute
 import presentation.screens.WebScreen
-import utils.serializableType
 import kotlin.reflect.typeOf
 
 enum class RouteScreen {
