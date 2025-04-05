@@ -22,15 +22,14 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -41,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -57,13 +55,15 @@ import domain.models.getPoint
 import domain.models.getTitle
 import domain.models.getUrl
 import hackernewskmp.composeapp.generated.resources.Res
-import hackernewskmp.composeapp.generated.resources.*
+import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.chevron_down
 import hackernewskmp.composeapp.generated.resources.clock
 import hackernewskmp.composeapp.generated.resources.link
+import hackernewskmp.composeapp.generated.resources.loading
 import hackernewskmp.composeapp.generated.resources.message
+import hackernewskmp.composeapp.generated.resources.points
+import hackernewskmp.composeapp.generated.resources.retry
 import io.ktor.http.Url
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.getString
@@ -77,28 +77,25 @@ class MainScreen : Screen {
     @Composable
     override fun Content() {
         val viewModel = getScreenModel<MainViewModel>()
-        val error by viewModel.error
+        val state by viewModel.state
         val snackBarHostState = remember { SnackbarHostState() }
         Scaffold(
             topBar = { AppTopBar() },
             snackbarHost = { SnackbarHost(snackBarHostState) }
         ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = padding.calculateTopPadding(),
-                        bottom = padding.calculateBottomPadding()
-                    )
+            PullToRefreshBox(
+                isRefreshing = state.refreshing,
+                onRefresh = viewModel::onPullToRefresh,
+                modifier = Modifier.fillMaxSize().padding(padding)
             ) {
                 PaginatedItemList()
             }
         }
 
-        error?.let {
-            LaunchedEffect(Unit) {
+        LaunchedEffect(Unit) {
+            if (state.error != null) {
                 val result = snackBarHostState.showSnackbar(
-                    message = it.message ?: getString(Res.string.an_error_occurred),
+                    message = state.error?.message ?: getString(Res.string.an_error_occurred),
                     actionLabel = getString(Res.string.retry)
                 )
                 if (result == SnackbarResult.ActionPerformed) {
@@ -111,8 +108,8 @@ class MainScreen : Screen {
 
 @Composable
 fun AppTopBar(viewModel: MainViewModel = koinInject()) {
+    val state by viewModel.state
     var expanded by remember { mutableStateOf(false) }
-    var selectedItem by viewModel.currentCategory
 
     Column(
         modifier = Modifier
@@ -125,7 +122,7 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
             Spacer(Modifier.size(16.dp))
             Text(
                 modifier = Modifier.align(Alignment.CenterVertically),
-                text = selectedItem.title,
+                text = state.currentCategory.title,
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                 fontFamily = MaterialTheme.typography.headlineSmall.fontFamily,
@@ -147,10 +144,7 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
                 DropdownMenuItem(
                     text = { Text(text = item.title) },
                     onClick = {
-                        if (selectedItem != item) {
-                            selectedItem = item
-                            viewModel.reset()
-                        }
+                        viewModel.onClickCategory(item)
                         expanded = false
                     })
             }
@@ -162,50 +156,37 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
 fun PaginatedItemList(
     viewModel: MainViewModel = koinInject()
 ) {
-    val refreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
-    val itemIds by viewModel.itemIds
-    val items by viewModel.items
-    val currentPage by viewModel.currentPage
-    val isLoading by viewModel.isLoading
+    val state by viewModel.state
 
-    if (refreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            delay(600)
-            viewModel.reset()
-            refreshState.endRefresh()
-        }
-    }
-
-    if (itemIds.isEmpty()) {
+    if (state.itemIds.isEmpty()) {
         viewModel.loadNextPage()
     } else {
         LaunchedEffect(listState) {
             snapshotFlow { listState.layoutInfo.visibleItemsInfo }
                 .mapNotNull { visibleItems -> visibleItems.lastOrNull()?.index }
                 .collect { lastVisibleItemIndex ->
-                    if (lastVisibleItemIndex >= items.size - viewModel.pageSize / 2) {
+                    if (lastVisibleItemIndex >= state.items.size - MainViewModel.PAGE_SIZE / 2) {
                         viewModel.loadNextPage()
                     }
                 }
         }
     }
 
-    Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
-        if (isLoading && items.isEmpty()) {
+    Box {
+        if (state.loading && state.items.isEmpty()) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
         }
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-            items(items.size) { index ->
-                ItemRowWidget(items[index])
+            items(state.items.size) { index ->
+                ItemRowWidget(state.items[index])
             }
 
-            if (items.isNotEmpty() && currentPage * viewModel.pageSize < itemIds.size) {
+            if (state.items.isNotEmpty() && state.currentPage * MainViewModel.PAGE_SIZE < state.itemIds.size) {
                 // only display the loading item if there are items loaded
                 item { ItemLoadingWidget() }
             }
         }
-        PullToRefreshContainer(refreshState, Modifier.align(Alignment.TopCenter))
     }
 }
 
@@ -276,7 +257,7 @@ fun ItemRowWidget(item: Item) {
                 )
             }
             item.getCommentCount()?.let {
-                CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
+                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
                     Card(
                         modifier = Modifier.padding(start = 8.dp),
                         onClick = { navigator.push(DetailsScreen(item.toJson(json))) }
