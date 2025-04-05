@@ -51,7 +51,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
             )
         }
 
-        composable<DetailsRoute>(typeMap = mapOf(typeOf<Item>() to serializableType<Item>())) { backStackEntry ->
+        composable<DetailsRoute> { backStackEntry ->
             DetailsScreen(
                 itemId = backStackEntry.toRoute<DetailsRoute>().id,
                 onBack = { navController.popBackStack() },
