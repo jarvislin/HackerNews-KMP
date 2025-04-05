@@ -88,7 +88,7 @@ class DetailsScreen(private val itemJson: String) : Screen {
     @Composable
     override fun Content() {
         val viewModel = getScreenModel<DetailsViewModel>()
-        val error by viewModel.error
+        val state by viewModel.state
         val snackBarHostState = remember { SnackbarHostState() }
         val json = koinInject<Json>()
         val item = Item.from(json, itemJson)
@@ -106,10 +106,10 @@ class DetailsScreen(private val itemJson: String) : Screen {
             }
         }
 
-        error?.let {
-            LaunchedEffect(Unit) {
+        LaunchedEffect(Unit) {
+            if(state.error != null) {
                 val result = snackBarHostState.showSnackbar(
-                    message = it.message ?: getString(Res.string.an_error_occurred),
+                    message = state.error?.message ?: getString(Res.string.an_error_occurred),
                     actionLabel = getString(Res.string.retry)
                 )
                 if (result == SnackbarResult.ActionPerformed) {
@@ -156,18 +156,13 @@ class DetailsScreen(private val itemJson: String) : Screen {
 
     @Composable
     fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsViewModel) {
-        val comments by viewModel.comments
-        val pollOptions by viewModel.pollOptions
         val listState = rememberLazyListState()
-        val isLoadingPollOptions by viewModel.isLoadingPollOptions
-        val isLoadingComments by viewModel.isLoadingComments
-        val error by viewModel.error
-
-        if (item is Poll && isLoadingPollOptions.not() && error == null && pollOptions.isEmpty()) {
+        val state by viewModel.state
+        if (item is Poll && state.loadingPollOptions.not() && state.error == null && state.pollOptions.isEmpty()) {
             viewModel.loadPollOptions(item.optionIds)
         }
 
-        if (isLoadingComments.not() && error == null && item.getCommentIds().isNotEmpty()) {
+        if (state.loadingComments.not() && state.error == null && item.getCommentIds().isNotEmpty()) {
             viewModel.loadComments(item.getCommentIds())
         }
 
@@ -178,11 +173,11 @@ class DetailsScreen(private val itemJson: String) : Screen {
                 bottom = paddingValues.calculateBottomPadding()
             )
         ) {
-            item { ContentWidget(item, pollOptions) }
-            items(comments.size) { index ->
-                CommentWidget(comments[index])
+            item { ContentWidget(item, state.pollOptions) }
+            items(state.comments.size) { index ->
+                CommentWidget(state.comments[index])
             }
-            if (comments.size < item.getCommentIds().size) item { ItemLoadingWidget() }
+            if (state.comments.size < item.getCommentIds().size) item { ItemLoadingWidget() }
         }
     }
 

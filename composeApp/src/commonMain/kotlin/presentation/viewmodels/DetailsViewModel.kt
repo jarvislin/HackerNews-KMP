@@ -1,5 +1,6 @@
 package presentation.viewmodels
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -14,49 +15,56 @@ class DetailsViewModel(
     private val getComments: GetComments,
     private val getPollOptions: GetPollOptions
 ) : ScreenModel {
-    val pollOptions = mutableStateOf(listOf<PollOption>())
-    val comments = mutableStateOf(listOf<Comment>())
-    val isLoadingPollOptions = mutableStateOf(false)
-    val isLoadingComments = mutableStateOf(false)
-    val error = mutableStateOf<Throwable?>(null)
+    private val _state = mutableStateOf(DetailsState())
+    val state: State<DetailsState> = _state
 
     fun loadComments(ids: List<Long>) {
         screenModelScope.launch {
-            isLoadingComments.value = true
+            _state.value = state.value.copy(loadingComments = true)
             getComments(ids).takeWhile { result ->
                 val shouldContinue = result.isSuccess
                 if (shouldContinue.not()) {
-                    error.value = result.exceptionOrNull()
-                    isLoadingComments.value = false
+                    _state.value = state.value.copy(
+                        loadingComments = false,
+                        error = result.exceptionOrNull()
+                    )
                 }
                 shouldContinue
             }.collect { result ->
-                comments.value += result.getOrThrow()
+                _state.value = state.value.copy(comments = state.value.comments + result.getOrThrow())
             }
         }
     }
 
     fun loadPollOptions(optionIds: List<Long>) {
         screenModelScope.launch {
-            isLoadingPollOptions.value = true
+            _state.value = state.value.copy(loadingPollOptions = true)
             getPollOptions(optionIds).fold(
                 onSuccess = {
-                    pollOptions.value = it
-                    isLoadingPollOptions.value = false
+                    _state.value = state.value.copy(
+                        pollOptions = it,
+                        loadingPollOptions = false
+                    )
                 },
                 onFailure = {
-                    error.value = it
-                    isLoadingPollOptions.value = false
+                    _state.value = state.value.copy(
+                        error = it,
+                        loadingPollOptions = false
+                    )
                 }
             )
         }
     }
 
     fun reset() {
-        pollOptions.value = emptyList()
-        comments.value = emptyList()
-        isLoadingPollOptions.value = false
-        isLoadingComments.value = false
-        error.value = null
+        _state.value = DetailsState()
     }
 }
+
+data class DetailsState(
+    val pollOptions: List<PollOption> = emptyList(),
+    val comments: List<Comment> = emptyList(),
+    val loadingPollOptions: Boolean = false,
+    val loadingComments: Boolean = false,
+    val error: Throwable? = null
+)
