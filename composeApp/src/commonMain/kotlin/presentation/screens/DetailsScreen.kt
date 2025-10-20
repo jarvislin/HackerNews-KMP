@@ -42,10 +42,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.getScreenModel
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import domain.models.Comment
@@ -60,316 +56,323 @@ import domain.models.getText
 import domain.models.getTitle
 import domain.models.getUrl
 import domain.models.getUserName
-import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
+import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.arrow_back
+import hackernewskmp.composeapp.generated.resources.back
+import hackernewskmp.composeapp.generated.resources.details
 import hackernewskmp.composeapp.generated.resources.link
 import hackernewskmp.composeapp.generated.resources.message
+import hackernewskmp.composeapp.generated.resources.no_comment
+import hackernewskmp.composeapp.generated.resources.points
+import hackernewskmp.composeapp.generated.resources.retry
 import hackernewskmp.composeapp.generated.resources.user_circle
 import io.ktor.http.Url
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.DetailsViewModel
-import presentation.widgets.SwipeContainer
+import presentation.viewmodels.MainViewModel
 import ui.trimmedTextStyle
+import utils.Constants
 
-class DetailsScreen(private val itemJson: String) : Screen {
-    @Composable
-    override fun Content() {
-        val viewModel = getScreenModel<DetailsViewModel>()
-        val error by viewModel.error
-        val snackBarHostState = remember { SnackbarHostState() }
-        val json = koinInject<Json>()
-        val item = Item.from(json, itemJson) ?: throw IllegalStateException("Item is null")
-        val navigator = LocalNavigator.currentOrThrow
+@Serializable
+data class DetailsRoute(
+    @SerialName("id")
+    val id: Long
+)
 
-        if (getPlatform().isAndroid()) {
-            ScaffoldContent(snackBarHostState, viewModel, item)
-        } else {
-            SwipeContainer(
-                onSwipeToDismiss = { navigator.pop() },
-                swipeThreshold = getPlatform().getScreenWidth() / 3.5f,
-            ) {
-                ScaffoldContent(snackBarHostState, viewModel, item)
-            }
-        }
+@Composable
+fun DetailsScreen(itemId: Long, onBack: () -> Unit, onClickLink: (Item) -> Unit) {
+    val viewModel = koinInject<DetailsViewModel>()
+    val mainViewModel = koinInject<MainViewModel>()
+    val state by viewModel.state
+    val snackBarHostState = remember { SnackbarHostState() }
+    val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
 
-        error?.let {
-            LaunchedEffect(Unit) {
-                val result = snackBarHostState.showSnackbar(it.message ?: "An error occurred", "Retry")
-                if (result == SnackbarResult.ActionPerformed) {
-                    viewModel.reset()
-                }
-            }
-        }
-    }
+    ScaffoldContent(snackBarHostState, viewModel, item, onBack, onClickLink)
 
-    @Composable
-    fun ScaffoldContent(snackBarHostState: SnackbarHostState, viewModel: DetailsViewModel, item: Item) {
-        Scaffold(
-            topBar = { DetailsTopBar() },
-            snackbarHost = { SnackbarHost(snackBarHostState) }
-        ) { padding ->
-            CommentList(item, padding, viewModel)
-        }
-    }
-
-    @Composable
-    fun DetailsTopBar() {
-        val navigator = LocalNavigator.currentOrThrow
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Details",
-                    fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = { navigator.pop() }) {
-                    Icon(
-                        painter = painterResource(Res.drawable.arrow_back),
-                        contentDescription = "Back",
-                    )
-                }
-            }
-        )
-    }
-
-    @Composable
-    fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsViewModel) {
-        val comments by viewModel.comments
-        val pollOptions by viewModel.pollOptions
-        val listState = rememberLazyListState()
-        val isLoadingPollOptions by viewModel.isLoadingPollOptions
-        val isLoadingComments by viewModel.isLoadingComments
-        val error by viewModel.error
-
-        if (item is Poll && isLoadingPollOptions.not() && error == null && pollOptions.isEmpty()) {
-            viewModel.loadPollOptions(item.optionIds)
-        }
-
-        if (isLoadingComments.not() && error == null && item.getCommentIds().isNotEmpty()) {
-            viewModel.loadComments(item.getCommentIds())
-        }
-
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.padding(
-                top = paddingValues.calculateTopPadding(),
-                bottom = paddingValues.calculateBottomPadding()
+    LaunchedEffect(Unit) {
+        if (state.error != null) {
+            val result = snackBarHostState.showSnackbar(
+                message = state.error?.message ?: getString(Res.string.an_error_occurred),
+                actionLabel = getString(Res.string.retry)
             )
-        ) {
-            item { ContentWidget(item, pollOptions) }
-            items(comments.size) { index ->
-                CommentWidget(comments[index])
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.reset()
             }
-            if (comments.size < item.getCommentIds().size) item { ItemLoadingWidget() }
         }
     }
+}
 
-    @Composable
-    fun ContentWidget(item: Item, pollOptions: List<PollOption>) {
-        val richTextState = rememberRichTextState()
-        richTextState.config.apply {
-            linkColor = MaterialTheme.colorScheme.tertiary
-            codeSpanStrokeColor = Color.Transparent
-            codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
-            codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
-        }
+@Composable
+fun ScaffoldContent(
+    snackBarHostState: SnackbarHostState,
+    viewModel: DetailsViewModel,
+    item: Item,
+    onBack: () -> Unit,
+    onClickLink: (Item) -> Unit
+) {
+    Scaffold(
+        topBar = { DetailsTopBar(onBack) },
+        snackbarHost = { SnackbarHost(snackBarHostState) }
+    ) { padding ->
+        CommentList(item, padding, viewModel, onClickLink)
+    }
+}
 
-        Column(Modifier.padding(horizontal = 16.dp)) {
+@Composable
+fun DetailsTopBar(onBack: () -> Unit) {
+    TopAppBar(
+        title = {
             Text(
-                text = item.getTitle(), Modifier.padding(vertical = 8.dp),
-                fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
-                lineHeight = 28.sp
+                text = stringResource(Res.string.details),
+                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
             )
-            Row(modifier = Modifier.padding(bottom = 8.dp)) {
-                Card {
+        },
+        navigationIcon = {
+            IconButton(onClick = { onBack() }) {
+                Icon(
+                    painter = painterResource(Res.drawable.arrow_back),
+                    contentDescription = stringResource(Res.string.back)
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsViewModel, onClickLink: (Item) -> Unit) {
+    val listState = rememberLazyListState()
+    val state by viewModel.state
+    if (item is Poll && state.loadingPollOptions.not() && state.error == null && state.pollOptions.isEmpty()) {
+        viewModel.loadPollOptions(item.optionIds)
+    }
+
+    if (state.loadingComments.not() && state.error == null && item.getCommentIds().isNotEmpty()) {
+        viewModel.loadComments(item.getCommentIds())
+    }
+
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.padding(
+            top = paddingValues.calculateTopPadding(),
+            bottom = paddingValues.calculateBottomPadding()
+        )
+    ) {
+        item { ContentWidget(item, state.pollOptions, onClickLink) }
+        items(state.comments.size) { index ->
+            CommentWidget(state.comments[index])
+        }
+        if (state.comments.size < item.getCommentIds().size) item { ItemLoadingWidget() }
+    }
+}
+
+@Composable
+fun ContentWidget(item: Item, pollOptions: List<PollOption>, onClickLink: (Item) -> Unit) {
+    val richTextState = rememberRichTextState()
+    richTextState.config.apply {
+        linkColor = MaterialTheme.colorScheme.tertiary
+        codeSpanStrokeColor = Color.Transparent
+        codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+        codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
+    }
+
+    Column(Modifier.padding(horizontal = 16.dp)) {
+        Text(
+            text = item.getTitle(), Modifier.padding(vertical = 8.dp),
+            fontSize = MaterialTheme.typography.titleLarge.fontSize,
+            fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
+            lineHeight = 28.sp
+        )
+        Row(modifier = Modifier.padding(bottom = 8.dp)) {
+            Card {
+                Text(
+                    text = stringResource(Res.string.points, item.getPoint()),
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    style = trimmedTextStyle
+                )
+            }
+            Card(
+                modifier = Modifier.padding(start = 8.dp),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.message),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
                     Text(
-                        text = "${item.getPoint()} points",
+                        text = "${item.getCommentCount()}",
                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(start = 4.dp),
                         style = trimmedTextStyle
                     )
                 }
-                Card(
-                    modifier = Modifier.padding(start = 8.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(Res.drawable.message),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = "${item.getCommentCount()}",
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            modifier = Modifier.padding(start = 4.dp),
-                            style = trimmedTextStyle
-                        )
-                    }
-                }
             }
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                Icon(
-                    painter = painterResource(Res.drawable.user_circle),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                )
-                Text(
-                    modifier = Modifier.padding(start = 4.dp),
-                    text = item.getUserName(),
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                    style = trimmedTextStyle
-                )
-            }
-            if (item is Poll) {
-                Column {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    pollOptions.forEachIndexed { index: Int, option: PollOption ->
-                        PollOptionWidget(option, pollOptions.size, index)
-                    }
-                }
-            }
-            item.getText()?.let { text ->
-                richTextState.setHtml(text)
-                RichText(
-                    state = richTextState,
-                    fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
-                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
-                )
-            }
-            item.getUrl()?.let { LinkWidget(item) }
-            Text(
-                text = item.getFormatedTime(),
-                modifier = Modifier.padding(bottom = 12.dp).padding(top = 8.dp),
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize
-            )
-            HorizontalDivider()
         }
-    }
-
-    @Composable
-    fun PollOptionWidget(option: PollOption, size: Int, index: Int) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Card(colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)) {
-                Box(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp).defaultMinSize(minWidth = 24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${option.score}",
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        style = trimmedTextStyle,
-                    )
-                }
-            }
+        Row(modifier = Modifier.padding(top = 8.dp)) {
+            Icon(
+                painter = painterResource(Res.drawable.user_circle),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
             Text(
-                text = option.text,
+                modifier = Modifier.padding(start = 4.dp),
+                text = item.getUserName(),
                 fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                modifier = Modifier.padding(start = 10.dp)
+                style = trimmedTextStyle
             )
         }
-        if (index < size - 1) {
-            Spacer(modifier = Modifier.height(12.dp))
+        if (item is Poll) {
+            Column {
+                Spacer(modifier = Modifier.height(8.dp))
+                pollOptions.forEachIndexed { index: Int, option: PollOption ->
+                    PollOptionWidget(option, pollOptions.size, index)
+                }
+            }
         }
+        item.getText()?.let { text ->
+            richTextState.setHtml(text)
+            RichText(
+                state = richTextState,
+                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
+                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+            )
+        }
+        item.getUrl()?.let { LinkWidget(item, onClickLink) }
+        Text(
+            text = item.getFormatedTime(),
+            modifier = Modifier.padding(bottom = 12.dp).padding(top = 8.dp),
+            fontSize = MaterialTheme.typography.bodyMedium.fontSize
+        )
+        HorizontalDivider()
     }
+}
 
-    @Composable
-    fun LinkWidget(item: Item) {
-        val navigator = LocalNavigator.currentOrThrow
-        val json = koinInject<Json>()
-
-        Spacer(modifier = Modifier.height(8.dp))
-        Card(
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
-            modifier = Modifier.height(40.dp),
-            shape = RoundedCornerShape(20.dp),
-            onClick = { navigator.push(WebScreen(item.toJson(json))) }) {
-            Row(modifier = Modifier.fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.size(16.dp))
-                Icon(
-                    painter = painterResource(Res.drawable.link),
-                    contentDescription = "Link",
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+@Composable
+fun PollOptionWidget(option: PollOption, size: Int, index: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Card(colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)) {
+            Box(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    .defaultMinSize(minWidth = 24.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
-                    modifier = Modifier.padding(start = 8.dp, end = 24.dp),
-                    fontSize = MaterialTheme.typography.labelLarge.fontSize,
-                    fontFamily = MaterialTheme.typography.labelLarge.fontFamily,
-                    fontWeight = MaterialTheme.typography.labelLarge.fontWeight,
+                    text = "${option.score}",
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
                     style = trimmedTextStyle,
-                    text = Url(item.getUrl()!!).host,
                 )
             }
         }
+        Text(
+            text = option.text,
+            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+            modifier = Modifier.padding(start = 10.dp)
+        )
     }
+    if (index < size - 1) {
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
 
-    @Composable
-    fun CommentWidget(comment: Comment) {
-        val paddingStart = 12.dp * (comment.depth + 1)
-        val localUriHandler = LocalUriHandler.current
-        val richTextState = rememberRichTextState()
-        richTextState.config.apply {
-            linkColor = MaterialTheme.colorScheme.tertiary
-            codeSpanStrokeColor = Color.Transparent
-            codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
-            codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
-        }
-        richTextState.setHtml(comment.getText() ?: "No content")
-
-        val uriHandler by remember {
-            mutableStateOf(object : UriHandler {
-                override fun openUri(uri: String) {
-                    localUriHandler.openUri(decodeUrl(uri))
-                }
-            })
-        }
-        Column(Modifier.padding(horizontal = 16.dp).padding(start = paddingStart, top = 12.dp)) {
-            Row {
-                Icon(
-                    painter = painterResource(Res.drawable.user_circle),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                )
-                Text(
-                    text = comment.getUserName(),
-                    modifier = Modifier.padding(start = 4.dp),
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                    style = trimmedTextStyle
-                )
-            }
-            CompositionLocalProvider(LocalUriHandler provides uriHandler) {
-                RichText(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    state = richTextState,
-                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                )
-            }
-            Text(
-                text = comment.getFormatedTime(),
-                modifier = Modifier.padding(bottom = 12.dp),
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+@Composable
+fun LinkWidget(item: Item, onClickLink: (Item) -> Unit) {
+    Spacer(modifier = Modifier.height(8.dp))
+    Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
+        modifier = Modifier.height(40.dp),
+        shape = RoundedCornerShape(20.dp),
+        onClick = { onClickLink(item) }) {
+        Row(
+            modifier = Modifier.fillMaxHeight(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(modifier = Modifier.size(16.dp))
+            Icon(
+                painter = painterResource(Res.drawable.link),
+                contentDescription = "Link",
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
-            HorizontalDivider()
+            Text(
+                modifier = Modifier.padding(start = 8.dp, end = 24.dp),
+                fontSize = MaterialTheme.typography.labelLarge.fontSize,
+                fontFamily = MaterialTheme.typography.labelLarge.fontFamily,
+                fontWeight = MaterialTheme.typography.labelLarge.fontWeight,
+                style = trimmedTextStyle,
+                text = Url(item.getUrl()!!).host,
+            )
         }
     }
+}
 
-    private fun decodeUrl(url: String): String {
-        val entityPattern = Regex("&#x([0-9A-Fa-f]+);")
-        return url.replace(entityPattern) { matchResult ->
-            val codePoint = matchResult.groupValues[1].toInt(16)
-            CharArray(1) { codePoint.toChar() }.concatToString()
+@Composable
+fun CommentWidget(comment: Comment) {
+    val paddingStart = 12.dp * (comment.depth + 1)
+    val localUriHandler = LocalUriHandler.current
+    val richTextState = rememberRichTextState()
+    richTextState.config.apply {
+        linkColor = MaterialTheme.colorScheme.tertiary
+        codeSpanStrokeColor = Color.Transparent
+        codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+        codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
+    }
+    richTextState.setHtml(comment.getText() ?: stringResource(Res.string.no_comment))
+
+    val uriHandler by remember {
+        mutableStateOf(object : UriHandler {
+            override fun openUri(uri: String) {
+                localUriHandler.openUri(decodeUrl(uri))
+            }
+        })
+    }
+    Column(Modifier.padding(horizontal = 16.dp).padding(start = paddingStart, top = 12.dp)) {
+        Row {
+            Icon(
+                painter = painterResource(Res.drawable.user_circle),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            Text(
+                text = comment.getUserName(),
+                modifier = Modifier.padding(start = 4.dp),
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                style = trimmedTextStyle
+            )
         }
+        CompositionLocalProvider(LocalUriHandler provides uriHandler) {
+            RichText(
+                modifier = Modifier.padding(vertical = 12.dp),
+                state = richTextState,
+                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+            )
+        }
+        Text(
+            text = comment.getFormatedTime(),
+            modifier = Modifier.padding(bottom = 12.dp),
+            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+        )
+        HorizontalDivider()
+    }
+}
+
+fun decodeUrl(url: String): String {
+    val entityPattern = Regex(Constants.REGEX_PATTERN)
+    return url.replace(entityPattern) { matchResult ->
+        val codePoint = matchResult.groupValues[1].toInt(16)
+        CharArray(1) { codePoint.toChar() }.concatToString()
     }
 }

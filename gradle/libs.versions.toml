@@ -1,8 +1,8 @@
 [versions]
-agp = "8.2.0"
-android-compileSdk = "34"
+agp = "8.11.2"
+android-compileSdk = "36"
 android-minSdk = "24"
-android-targetSdk = "34"
+android-targetSdk = "36"
 androidx-activityCompose = "1.9.0"
 androidx-appcompat = "1.6.1"
 androidx-constraintlayout = "2.1.4"
@@ -10,24 +10,21 @@ androidx-core-ktx = "1.13.1"
 androidx-espresso-core = "3.5.1"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.1.5"
-compose-plugin = "1.6.10"
-composeWebviewMultiplatform = "1.9.12"
+compose-plugin = "1.9.1"
+composeWebviewMultiplatform = "2.0.3"
 junit = "4.13.2"
-koinCompose = "1.1.0"
-koinCore = "3.5.0"
-kotlin = "2.0.0"
-kotlinx-serializationJson = "1.6.3"
-kotlinxDatetime = "0.6.0"
-ktor = "2.3.9"
-ktorClientLogging = "2.3.7"
+koin = "4.1.1"
+kotlin = "2.2.20"
+kotlinx-serializationJson = "1.9.0"
+kotlinxDatetime = "0.7.1"
+ktor = "3.3.1"
 napier = "2.7.1"
-richeditorCompose = "1.0.0-rc05"
-voyager = "1.0.0"
+richeditorCompose = "1.0.0-rc13"
+navigationCompose = "2.9.1"
 
 [libraries]
 compose-webview-multiplatform = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "composeWebviewMultiplatform" }
-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koinCompose" }
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serializationJson" }
@@ -41,15 +38,12 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktorClientLogging" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
-navigator-screen-model = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
-navigator-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
-navigator-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
 richeditor-compose = { module = "com.mohamedrejeb.richeditor:richeditor-compose", version.ref = "richeditorCompose" }
+navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

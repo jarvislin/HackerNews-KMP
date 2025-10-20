@@ -23,17 +23,14 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.WebViewState
@@ -45,59 +42,74 @@ import domain.models.getUrl
 import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.arrow_back
+import hackernewskmp.composeapp.generated.resources.browse_comments
+import hackernewskmp.composeapp.generated.resources.go_back
 import hackernewskmp.composeapp.generated.resources.message
+import hackernewskmp.composeapp.generated.resources.open_with_the_default_browser
 import hackernewskmp.composeapp.generated.resources.reload
+import hackernewskmp.composeapp.generated.resources.reload_web_page
+import hackernewskmp.composeapp.generated.resources.webview_error
 import hackernewskmp.composeapp.generated.resources.world
 import io.github.aakira.napier.Napier
 import io.ktor.http.Url
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import presentation.widgets.SwipeContainer
+import presentation.viewmodels.MainViewModel
+import utils.Constants
 
-class WebScreen(private val itemJson: String) : Screen {
-    @Composable
-    override fun Content() {
-        val json = koinInject<Json>()
-        val item = Item.from(json, itemJson) ?: throw IllegalStateException("Item is null")
-        val snackBarHostState = remember { SnackbarHostState() }
-        val webViewNavigator = rememberWebViewNavigator()
-        val navigator = LocalNavigator.currentOrThrow
-        val rawUrl = item.getUrl() ?: throw IllegalStateException("URL is null")
-        val webViewState = rememberWebViewState(getUrl(rawUrl))
+@Serializable
+data class WebRoute(
+    @SerialName("id")
+    val id: Long
+)
 
-        if (getPlatform().isAndroid()) {
-            ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState)
-        } else {
-            SwipeContainer(
-                onSwipeToDismiss = { navigator.pop() },
-                swipeThreshold = getPlatform().getScreenWidth() / 3.5f,
-            ) {
-                ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState)
-            }
-        }
+@Composable
+fun WebScreen(itemId: Long, onBack: () -> Unit, onClickComment: (Item) -> Unit) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    val webViewNavigator = rememberWebViewNavigator()
+    val mainViewModel = koinInject<MainViewModel>()
+    val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
+    val rawUrl = item.getUrl()
+        ?: throw IllegalStateException(Constants.URL_NULL_MESSAGE)
+    val webViewState = rememberWebViewState(getUrl(rawUrl))
+    val scope = rememberCoroutineScope()
 
-        webViewState.errorsForCurrentRequest.forEach { error ->
-            Napier.e("WebView error: ${error.description}")
+    ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState, onBack, onClickComment)
+
+    webViewState.errorsForCurrentRequest.forEach { error ->
+        scope.launch(Dispatchers.Main) {
+            Napier.e(getString(Res.string.webview_error, error.description))
         }
     }
 
-    private fun getUrl(rawUrl: String): String {
-        val isPdf = Url(rawUrl).pathSegments.lastOrNull()?.endsWith(".pdf") ?: false
-        return if (isPdf && getPlatform().isAndroid()) "https://docs.google.com/gview?embedded=true&url=$rawUrl"
-        else rawUrl
-    }
+
+}
+
+private fun getUrl(rawUrl: String): String {
+    val isPdf = Url(rawUrl).pathSegments.lastOrNull()
+        ?.endsWith(Constants.PDF_EXTENSION) ?: false
+    return if (isPdf && getPlatform().isAndroid()) {
+        Constants.URL_GOOGLE_DOCS + rawUrl
+    } else rawUrl
 }
 
 @Composable
 fun ScaffoldContent(
     snackBarHostState: SnackbarHostState,
-    item: Item, webViewNavigator: WebViewNavigator, webViewState: WebViewState
+    item: Item, webViewNavigator: WebViewNavigator, webViewState: WebViewState,
+    onBack: () -> Unit, onClickComment: (Item) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
-        topBar = { WebTopBar(item, webViewNavigator) },
+        topBar = { WebTopBar(item, webViewNavigator, onBack, onClickComment) },
     ) { paddings ->
         Box {
             WebView(
@@ -121,10 +133,10 @@ fun ScaffoldContent(
 }
 
 @Composable
-fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
+fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator, onBack: () -> Unit, onClickComment: (Item) -> Unit) {
     val localUriHandler = LocalUriHandler.current
-    val navigator = LocalNavigator.currentOrThrow
     val json = koinInject<Json>()
+
     TopAppBar(
         title = {
             Text(
@@ -135,10 +147,10 @@ fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { navigator.pop() }) {
+            IconButton(onClick = { onBack() }) {
                 Icon(
                     painter = painterResource(Res.drawable.arrow_back),
-                    contentDescription = "Go back"
+                    contentDescription = stringResource(Res.string.go_back)
                 )
             }
         },
@@ -146,24 +158,30 @@ fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator) {
             IconButton(onClick = { webViewNavigator.reload() }) {
                 Icon(
                     painter = painterResource(Res.drawable.reload),
-                    contentDescription = "Reload the web page"
+                    contentDescription = stringResource(Res.string.reload_web_page)
                 )
             }
             IconButton(
-                onClick = { localUriHandler.openUri(item.getUrl() ?: throw IllegalStateException("URL is null")) },
+                onClick = {
+                    localUriHandler.openUri(
+                        item.getUrl() ?: throw IllegalStateException(
+                            Constants.URL_NULL_MESSAGE
+                        )
+                    )
+                },
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.world),
-                    contentDescription = "Open with the default browser"
+                    contentDescription = stringResource(Res.string.open_with_the_default_browser)
                 )
             }
-            item.getCommentCount()?.let { count ->
+            item.getCommentCount()?.let {
                 IconButton(
-                    onClick = { navigator.push(DetailsScreen(item.toJson(json))) },
+                    onClick = { onClickComment(item) },
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.message),
-                        contentDescription = "Browse comments",
+                        contentDescription = stringResource(Res.string.browse_comments),
                         modifier = Modifier.size(24.dp)
                     )
                 }
