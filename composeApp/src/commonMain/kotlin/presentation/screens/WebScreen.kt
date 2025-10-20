@@ -162,12 +162,7 @@ fun WebTopBar(
     val url = remember(item) { item.getUrl()?.let { Url(it) } ?: error(Constants.URL_NULL_MESSAGE) }
 
     TopAppBar(
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
-            titleContentColor = MaterialTheme.colorScheme.primary,
-            actionIconContentColor = MaterialTheme.colorScheme.primary,
-            navigationIconContentColor = MaterialTheme.colorScheme.primary
-        ),
+        colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
         title = {
             Text(
                 text = url.host,

@@ -35,6 +35,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -86,10 +88,19 @@ fun MainScreen(onClickItem: (Item) -> Unit, onClickComment: (Item) -> Unit) {
         topBar = { AppTopBar() },
         snackbarHost = { SnackbarHost(snackBarHostState) },
         content = { padding ->
+            val pullToRefreshState = rememberPullToRefreshState()
             PullToRefreshBox(
                 isRefreshing = state.refreshing,
                 onRefresh = viewModel::onPullToRefresh,
-                modifier = Modifier.fillMaxSize()//.padding(padding)
+                modifier = Modifier.fillMaxSize(),
+                state = pullToRefreshState,
+                indicator = {
+                    Indicator(
+                        modifier = Modifier.padding(padding).align(Alignment.TopCenter),
+                        isRefreshing = state.refreshing,
+                        state = pullToRefreshState,
+                    )
+                },
             ) {
                 PaginatedItemList(
                     onClickItem = onClickItem,
@@ -119,12 +130,7 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
     var expanded by remember { mutableStateOf(false) }
 
     TopAppBar(
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
-            titleContentColor = MaterialTheme.colorScheme.primary,
-            actionIconContentColor = MaterialTheme.colorScheme.primary,
-            navigationIconContentColor = MaterialTheme.colorScheme.primary
-        ),
+        colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
         title = {
             Row(
                 modifier = Modifier
@@ -135,15 +141,13 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
                         onClick = { expanded = true },
                     )
                     .minimumInteractiveComponentSize()
-                    .padding(horizontal = 16.dp)
-                ,
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(state.currentCategory.title)
                 Spacer(Modifier.width(8.dp))
                 Icon(
                     painter = painterResource(Res.drawable.chevron_down),
-                    tint = MaterialTheme.colorScheme.primary,
                     contentDescription = null,
                 )
             }

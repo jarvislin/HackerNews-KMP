@@ -8,8 +8,6 @@ import modules.viewModelModule
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 import presentation.RootScreen
-import ui.darkScheme
-import ui.lightScheme
 
 @Composable
 @Preview
@@ -22,15 +20,9 @@ fun App() {
             viewModelModule
         )
     }) {
-        val colors = if (isSystemInDarkTheme()) {
-            darkScheme
-        } else {
-            lightScheme
-        }
-
         MaterialTheme(
             typography = getPlatform().getTypography(),
-            colorScheme = colors
+            colorScheme = getPlatform().getColorScheme(isSystemInDarkTheme())
         ) {
             RootScreen()
         }
