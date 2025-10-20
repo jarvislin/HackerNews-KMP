@@ -45,7 +45,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
             WebScreen(
                 itemId = backStackEntry.toRoute<WebRoute>().id,
                 onBack = { navController.popBackStack() },
-                onClickComment = { navController.navigate(DetailsRoute(it.getItemId())) }
+                onClickItem = { navController.navigate(DetailsRoute(it.getItemId())) }
             )
         }
 
@@ -53,7 +53,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
             DetailsScreen(
                 itemId = backStackEntry.toRoute<DetailsRoute>().id,
                 onBack = { navController.popBackStack() },
-                onClickLink = { navController.navigate(WebRoute(it.getItemId())) }
+                onClickItem = { navController.navigate(WebRoute(it.getItemId())) }
             )
         }
     }

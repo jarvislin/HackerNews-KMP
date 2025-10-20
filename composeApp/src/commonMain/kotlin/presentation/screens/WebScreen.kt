@@ -22,6 +22,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,7 +38,6 @@ import com.multiplatform.webview.web.WebViewState
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
 import domain.models.Item
-import domain.models.getCommentCount
 import domain.models.getUrl
 import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
@@ -71,17 +71,31 @@ data class WebRoute(
 )
 
 @Composable
-fun WebScreen(itemId: Long, onBack: () -> Unit, onClickComment: (Item) -> Unit) {
+fun WebScreen(
+    itemId: Long,
+    onBack: () -> Unit,
+    onClickItem: (Item) -> Unit
+) {
     val snackBarHostState = remember { SnackbarHostState() }
     val webViewNavigator = rememberWebViewNavigator()
     val mainViewModel = koinInject<MainViewModel>()
     val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
-    val rawUrl = item.getUrl()
-        ?: throw IllegalStateException(Constants.URL_NULL_MESSAGE)
+    val rawUrl = item.getUrl() ?: error(Constants.URL_NULL_MESSAGE)
     val webViewState = rememberWebViewState(getUrl(rawUrl))
     val scope = rememberCoroutineScope()
+    val onClickComments = { onClickItem(item) }
+    val localUriHandler = LocalUriHandler.current
+    val onOpenInExternalClick = { localUriHandler.openUri(rawUrl) }
 
-    ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState, onBack, onClickComment)
+    ScaffoldContent(
+        snackBarHostState = snackBarHostState,
+        item = item,
+        webViewNavigator = webViewNavigator,
+        webViewState = webViewState,
+        onBack = onBack,
+        onOpenInExternalClick = onOpenInExternalClick,
+        onClickComments = onClickComments
+    )
 
     webViewState.errorsForCurrentRequest.forEach { error ->
         scope.launch(Dispatchers.Main) {
@@ -103,22 +117,27 @@ private fun getUrl(rawUrl: String): String {
 @Composable
 fun ScaffoldContent(
     snackBarHostState: SnackbarHostState,
-    item: Item, webViewNavigator: WebViewNavigator, webViewState: WebViewState,
-    onBack: () -> Unit, onClickComment: (Item) -> Unit
+    item: Item,
+    webViewNavigator: WebViewNavigator,
+    webViewState: WebViewState,
+    onBack: () -> Unit,
+    onOpenInExternalClick: () -> Unit,
+    onClickComments: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
-        topBar = { WebTopBar(item, webViewNavigator, onBack, onClickComment) },
+        topBar = { WebTopBar(item, webViewNavigator, onBack, onOpenInExternalClick, onClickComments) },
     ) { paddings ->
         Box {
             WebView(
                 navigator = webViewNavigator,
                 state = webViewState,
-                modifier = Modifier.fillMaxSize().padding(
-                    top = paddings.calculateTopPadding(),
-                    bottom = paddings.calculateBottomPadding()
-                )
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = paddings.calculateTopPadding(),
+                    )
             )
             if (webViewState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -133,21 +152,31 @@ fun ScaffoldContent(
 }
 
 @Composable
-fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator, onBack: () -> Unit, onClickComment: (Item) -> Unit) {
-    val localUriHandler = LocalUriHandler.current
-    val json = koinInject<Json>()
+fun WebTopBar(
+    item: Item,
+    webViewNavigator: WebViewNavigator,
+    onBack: () -> Unit,
+    onOpenInExternalClick: () -> Unit,
+    onClickComments: () -> Unit
+) {
+    val url = remember(item) { item.getUrl()?.let { Url(it) } ?: error(Constants.URL_NULL_MESSAGE) }
 
     TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+            titleContentColor = MaterialTheme.colorScheme.primary,
+            actionIconContentColor = MaterialTheme.colorScheme.primary,
+            navigationIconContentColor = MaterialTheme.colorScheme.primary
+        ),
         title = {
             Text(
-                text = Url(item.getUrl()!!).host,
+                text = url.host,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
-                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
             )
         },
         navigationIcon = {
-            IconButton(onClick = { onBack() }) {
+            IconButton(onClick = onBack) {
                 Icon(
                     painter = painterResource(Res.drawable.arrow_back),
                     contentDescription = stringResource(Res.string.go_back)
@@ -155,36 +184,26 @@ fun WebTopBar(item: Item, webViewNavigator: WebViewNavigator, onBack: () -> Unit
             }
         },
         actions = {
-            IconButton(onClick = { webViewNavigator.reload() }) {
+            IconButton(onClick = webViewNavigator::reload) {
                 Icon(
                     painter = painterResource(Res.drawable.reload),
                     contentDescription = stringResource(Res.string.reload_web_page)
                 )
             }
-            IconButton(
-                onClick = {
-                    localUriHandler.openUri(
-                        item.getUrl() ?: throw IllegalStateException(
-                            Constants.URL_NULL_MESSAGE
-                        )
-                    )
-                },
-            ) {
+            IconButton(onClick = onOpenInExternalClick) {
                 Icon(
                     painter = painterResource(Res.drawable.world),
                     contentDescription = stringResource(Res.string.open_with_the_default_browser)
                 )
             }
-            item.getCommentCount()?.let {
-                IconButton(
-                    onClick = { onClickComment(item) },
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.message),
-                        contentDescription = stringResource(Res.string.browse_comments),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+            IconButton(
+                onClick = onClickComments,
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.message),
+                    contentDescription = stringResource(Res.string.browse_comments),
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     )

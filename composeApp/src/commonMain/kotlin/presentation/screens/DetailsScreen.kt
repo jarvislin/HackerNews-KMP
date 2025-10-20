@@ -29,6 +29,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -86,12 +87,17 @@ data class DetailsRoute(
 )
 
 @Composable
-fun DetailsScreen(itemId: Long, onBack: () -> Unit, onClickLink: (Item) -> Unit) {
+fun DetailsScreen(
+    itemId: Long,
+    onBack: () -> Unit,
+    onClickItem: (Item) -> Unit
+) {
     val viewModel = koinInject<DetailsViewModel>()
     val mainViewModel = koinInject<MainViewModel>()
     val state by viewModel.state
     val snackBarHostState = remember { SnackbarHostState() }
     val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
+    val onClickLink = { onClickItem(item) }
 
     ScaffoldContent(snackBarHostState, viewModel, item, onBack, onClickLink)
 
@@ -114,7 +120,7 @@ fun ScaffoldContent(
     viewModel: DetailsViewModel,
     item: Item,
     onBack: () -> Unit,
-    onClickLink: (Item) -> Unit
+    onClickLink: () -> Unit
 ) {
     Scaffold(
         topBar = { DetailsTopBar(onBack) },
@@ -127,14 +133,17 @@ fun ScaffoldContent(
 @Composable
 fun DetailsTopBar(onBack: () -> Unit) {
     TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+            titleContentColor = MaterialTheme.colorScheme.primary,
+            actionIconContentColor = MaterialTheme.colorScheme.primary,
+            navigationIconContentColor = MaterialTheme.colorScheme.primary
+        ),
         title = {
-            Text(
-                text = stringResource(Res.string.details),
-                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
-            )
+            Text(stringResource(Res.string.details))
         },
         navigationIcon = {
-            IconButton(onClick = { onBack() }) {
+            IconButton(onClick = onBack) {
                 Icon(
                     painter = painterResource(Res.drawable.arrow_back),
                     contentDescription = stringResource(Res.string.back)
@@ -145,7 +154,12 @@ fun DetailsTopBar(onBack: () -> Unit) {
 }
 
 @Composable
-fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsViewModel, onClickLink: (Item) -> Unit) {
+fun CommentList(
+    item: Item,
+    contentPadding: PaddingValues,
+    viewModel: DetailsViewModel,
+    onClickLink: () -> Unit
+) {
     val listState = rememberLazyListState()
     val state by viewModel.state
     if (item is Poll && state.loadingPollOptions.not() && state.error == null && state.pollOptions.isEmpty()) {
@@ -158,10 +172,7 @@ fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsView
 
     LazyColumn(
         state = listState,
-        modifier = Modifier.padding(
-            top = paddingValues.calculateTopPadding(),
-            bottom = paddingValues.calculateBottomPadding()
-        )
+        contentPadding = contentPadding,
     ) {
         item { ContentWidget(item, state.pollOptions, onClickLink) }
         items(state.comments.size) { index ->
@@ -172,7 +183,7 @@ fun CommentList(item: Item, paddingValues: PaddingValues, viewModel: DetailsView
 }
 
 @Composable
-fun ContentWidget(item: Item, pollOptions: List<PollOption>, onClickLink: (Item) -> Unit) {
+fun ContentWidget(item: Item, pollOptions: List<PollOption>, onClickLink: () -> Unit) {
     val richTextState = rememberRichTextState()
     richTextState.config.apply {
         linkColor = MaterialTheme.colorScheme.tertiary
@@ -288,13 +299,14 @@ fun PollOptionWidget(option: PollOption, size: Int, index: Int) {
 }
 
 @Composable
-fun LinkWidget(item: Item, onClickLink: (Item) -> Unit) {
+fun LinkWidget(item: Item, onClickLink: () -> Unit) {
     Spacer(modifier = Modifier.height(8.dp))
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
         modifier = Modifier.height(40.dp),
         shape = RoundedCornerShape(20.dp),
-        onClick = { onClickLink(item) }) {
+        onClick = onClickLink,
+    ) {
         Row(
             modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
