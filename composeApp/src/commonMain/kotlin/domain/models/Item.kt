@@ -1,15 +1,18 @@
+@file:OptIn(ExperimentalTime::class)
+
 package domain.models
 
 import data.remote.models.RawItem
 import extensions.TimeExtension.format
 import extensions.TimeExtension.toInstant
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
 
 /**
  * Base class for all items.
