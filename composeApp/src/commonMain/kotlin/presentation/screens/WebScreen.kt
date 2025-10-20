@@ -62,7 +62,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
-import presentation.widgets.SwipeContainer
 import utils.Constants
 
 @Serializable
@@ -82,16 +81,7 @@ fun WebScreen(itemId: Long, onBack: () -> Unit, onClickComment: (Item) -> Unit) 
     val webViewState = rememberWebViewState(getUrl(rawUrl))
     val scope = rememberCoroutineScope()
 
-    if (getPlatform().isAndroid()) {
-        ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState, onBack, onClickComment)
-    } else {
-        SwipeContainer(
-            onSwipeToDismiss = { onBack() },
-            swipeThreshold = getPlatform().getScreenWidth() / 3.5f,
-        ) {
-            ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState, onBack, onClickComment)
-        }
-    }
+    ScaffoldContent(snackBarHostState, item, webViewNavigator, webViewState, onBack, onClickComment)
 
     webViewState.errorsForCurrentRequest.forEach { error ->
         scope.launch(Dispatchers.Main) {

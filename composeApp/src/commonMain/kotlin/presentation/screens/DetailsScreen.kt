@@ -56,7 +56,6 @@ import domain.models.getText
 import domain.models.getTitle
 import domain.models.getUrl
 import domain.models.getUserName
-import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.arrow_back
@@ -71,14 +70,12 @@ import hackernewskmp.composeapp.generated.resources.user_circle
 import io.ktor.http.Url
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.DetailsViewModel
 import presentation.viewmodels.MainViewModel
-import presentation.widgets.SwipeContainer
 import ui.trimmedTextStyle
 import utils.Constants
 
@@ -96,16 +93,7 @@ fun DetailsScreen(itemId: Long, onBack: () -> Unit, onClickLink: (Item) -> Unit)
     val snackBarHostState = remember { SnackbarHostState() }
     val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
 
-    if (getPlatform().isAndroid()) {
-        ScaffoldContent(snackBarHostState, viewModel, item, onBack, onClickLink)
-    } else {
-        SwipeContainer(
-            onSwipeToDismiss = { onBack() },
-            swipeThreshold = getPlatform().getScreenWidth() / 3.5f,
-        ) {
-            ScaffoldContent(snackBarHostState, viewModel, item, onBack, onClickLink)
-        }
-    }
+    ScaffoldContent(snackBarHostState, viewModel, item, onBack, onClickLink)
 
     LaunchedEffect(Unit) {
         if (state.error != null) {
