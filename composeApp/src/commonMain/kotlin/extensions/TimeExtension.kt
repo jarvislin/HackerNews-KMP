@@ -11,9 +11,11 @@ import kotlin.time.Instant
 
 object TimeExtension {
     private const val FORMAT = "yyyy-MM-dd HH:mm:ss"
+    @OptIn(ExperimentalTime::class)
     fun Long.toLocalDateTime() = toInstant()
         .toLocalDateTime(TimeZone.currentSystemDefault())
 
+    @OptIn(ExperimentalTime::class)
     fun Long.toInstant() = Instant.fromEpochSeconds(this)
 
     fun LocalDateTime.format(): String {

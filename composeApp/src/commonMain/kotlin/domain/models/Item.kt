@@ -63,6 +63,7 @@ fun Item.getCommentCount(): Int? = when (this) {
     else -> null
 }
 
+@OptIn(ExperimentalTime::class)
 fun Item.getInstant(): Instant = when (this) {
     is Ask -> time
     is Job -> time
@@ -72,6 +73,7 @@ fun Item.getInstant(): Instant = when (this) {
     is Comment -> time
 }.toInstant()
 
+@OptIn(ExperimentalTime::class)
 fun Item.getFormatedDiffTime(): String =
     when (val diff = Clock.System.now().minus(getInstant()).toLong(DurationUnit.SECONDS)) {
         in 0..60 -> "$diff seconds ago"
@@ -80,6 +82,7 @@ fun Item.getFormatedDiffTime(): String =
         else -> "${diff / 86400} days ago"
     }
 
+@OptIn(ExperimentalTime::class)
 fun Item.getFormatedTime(): String =
     getInstant().toLocalDateTime(TimeZone.currentSystemDefault()).format()
 
