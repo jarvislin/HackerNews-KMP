@@ -1,6 +1,7 @@
 package presentation
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -8,14 +9,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import domain.models.Item
 import domain.models.getUrl
 import presentation.screens.DetailsRoute
 import presentation.screens.DetailsScreen
 import presentation.screens.MainScreen
 import presentation.screens.WebRoute
 import presentation.screens.WebScreen
-import kotlin.reflect.typeOf
 
 enum class RouteScreen {
     Main,
@@ -28,7 +27,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
         startDestination = RouteScreen.Main.name,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().statusBarsPadding()
     ) {
         composable(RouteScreen.Main.name) {
             MainScreen(
