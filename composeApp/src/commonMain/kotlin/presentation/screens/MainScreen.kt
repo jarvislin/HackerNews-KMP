@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -61,6 +62,7 @@ import domain.models.getFormatedDiffTime
 import domain.models.getPoint
 import domain.models.getTitle
 import domain.models.getUrl
+import extensions.trimmedHostName
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.chevron_down
@@ -211,8 +213,8 @@ fun PaginatedItemList(
             modifier = Modifier.fillMaxSize(),
             contentPadding = contentPadding
         ) {
-            items(state.items.size) { index ->
-                ItemRowWidget(state.items[index], onClickItem, onClickComment)
+            itemsIndexed(items = state.items, key = { index, item -> item.getItemId() }) { index, item ->
+                ItemRowWidget(item, { onClickItem(item) }, { onClickComment(item) })
             }
 
             if (state.items.isNotEmpty() && state.currentPage * MainViewModel.PAGE_SIZE < state.itemIds.size) {
@@ -224,9 +226,13 @@ fun PaginatedItemList(
 }
 
 @Composable
-fun ItemRowWidget(item: Item, onClickItem: (Item) -> Unit, onClickComment: (Item) -> Unit) {
+fun ItemRowWidget(
+    item: Item,
+    onClickItem: () -> Unit,
+    onClickComment: () -> Unit
+) {
     Column(
-        Modifier.fillMaxWidth().clickable { onClickItem(item) }
+        Modifier.fillMaxWidth().clickable(onClick = onClickItem)
     ) {
         Spacer(Modifier.height(12.dp))
         Text(
@@ -240,14 +246,14 @@ fun ItemRowWidget(item: Item, onClickItem: (Item) -> Unit, onClickComment: (Item
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            item.getUrl()?.let { url ->
+            item.getUrl()?.let { urlString ->
                 Icon(
                     painter = painterResource(Res.drawable.link),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    Url(url).host,
+                    Url(urlString).trimmedHostName(),
                     Modifier.padding(horizontal = 4.dp),
                     fontSize = MaterialTheme.typography.bodySmall.fontSize,
                     style = trimmedTextStyle
@@ -282,7 +288,7 @@ fun ItemRowWidget(item: Item, onClickItem: (Item) -> Unit, onClickComment: (Item
                 CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
                     Card(
                         modifier = Modifier.padding(start = 8.dp),
-                        onClick = { onClickComment(item) }
+                        onClick = onClickComment
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

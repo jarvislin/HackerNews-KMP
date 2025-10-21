@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,7 +39,9 @@ import com.multiplatform.webview.web.WebViewState
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
 import domain.models.Item
+import domain.models.getTitle
 import domain.models.getUrl
+import extensions.trimmedHostName
 import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.arrow_back
@@ -164,11 +167,20 @@ fun WebTopBar(
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
         title = {
-            Text(
-                text = url.host,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-            )
+            Column {
+                Text(
+                    text = item.getTitle(),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                )
+                Text(
+                    text = url.trimmedHostName(),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.labelSmall
+                )
+
+            }
         },
         navigationIcon = {
             IconButton(onClick = onBack) {

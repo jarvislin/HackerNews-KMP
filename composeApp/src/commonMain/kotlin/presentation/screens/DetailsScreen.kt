@@ -134,9 +134,7 @@ fun ScaffoldContent(
 fun DetailsTopBar(onBack: () -> Unit) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
-        title = {
-            Text(stringResource(Res.string.details))
-        },
+        title = { },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(

@@ -91,7 +91,7 @@ fun Item.getTitle(): String = when (this) {
     is Job -> title
     is Poll -> title
     is Story -> title
-    else -> throw IllegalStateException("Unsupported item type")
+    else -> error("Unsupported item type")
 }
 
 fun Item.getText(): String? = when (this) {
@@ -100,7 +100,7 @@ fun Item.getText(): String? = when (this) {
     is Poll -> text
     is Story -> text
     is Comment -> text
-    else -> throw IllegalStateException("Unsupported item type")
+    else -> error("Unsupported item type")
 }
 
 fun Item.getUrl(): String? = when (this) {
@@ -120,7 +120,7 @@ fun Item.getUserName(): String = when (this) {
 
 fun Item.getPoint(): Int = when (this) {
     is Ask -> score
-    is Comment -> throw IllegalStateException("Unsupported item type")
+    is Comment -> error("Unsupported item type")
     is Job -> score
     is Poll -> score
     is PollOption -> score
