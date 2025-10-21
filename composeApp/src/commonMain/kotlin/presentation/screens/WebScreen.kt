@@ -128,9 +128,28 @@ fun ScaffoldContent(
     onClickComments: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val title = webViewState.pageTitle ?: item.getTitle()
+    val urlString = item.getUrl() ?: error(Constants.URL_NULL_MESSAGE)
+    val combinedOnBack: () -> Unit = {
+        if (webViewNavigator.canGoBack) {
+            webViewNavigator.navigateBack()
+        } else {
+            onBack()
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
-        topBar = { WebTopBar(item, webViewNavigator, onBack, onOpenInExternalClick, onClickComments) },
+        topBar = {
+            WebTopBar(
+                title = title,
+                urlString = urlString,
+                webViewNavigator = webViewNavigator,
+                onBack = combinedOnBack,
+                onOpenInExternalClick = onOpenInExternalClick,
+                onClickComments = onClickComments
+            )
+        },
     ) { paddings ->
         Box {
             WebView(
@@ -156,20 +175,21 @@ fun ScaffoldContent(
 
 @Composable
 fun WebTopBar(
-    item: Item,
+    title: String,
+    urlString: String,
     webViewNavigator: WebViewNavigator,
     onBack: () -> Unit,
     onOpenInExternalClick: () -> Unit,
     onClickComments: () -> Unit
 ) {
-    val url = remember(item) { item.getUrl()?.let { Url(it) } ?: error(Constants.URL_NULL_MESSAGE) }
+    val url = remember(urlString) { Url(urlString) }
 
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
         title = {
             Column {
                 Text(
-                    text = item.getTitle(),
+                    text = title,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
                 )
