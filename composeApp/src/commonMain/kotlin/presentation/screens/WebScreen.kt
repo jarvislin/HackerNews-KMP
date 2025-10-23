@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,22 +43,21 @@ import domain.models.getUrl
 import extensions.trimmedHostName
 import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
-import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.browse_comments
 import hackernewskmp.composeapp.generated.resources.go_back
-import hackernewskmp.composeapp.generated.resources.message
+import hackernewskmp.composeapp.generated.resources.ic_arrow_left_linear
+import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
+import hackernewskmp.composeapp.generated.resources.ic_refresh_linear
+import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
 import hackernewskmp.composeapp.generated.resources.open_with_the_default_browser
-import hackernewskmp.composeapp.generated.resources.reload
 import hackernewskmp.composeapp.generated.resources.reload_web_page
 import hackernewskmp.composeapp.generated.resources.webview_error
-import hackernewskmp.composeapp.generated.resources.world
 import io.github.aakira.napier.Napier
 import io.ktor.http.Url
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -205,7 +203,7 @@ fun WebTopBar(
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
-                    painter = painterResource(Res.drawable.arrow_back),
+                    painter = painterResource(Res.drawable.ic_arrow_left_linear),
                     contentDescription = stringResource(Res.string.go_back)
                 )
             }
@@ -213,13 +211,13 @@ fun WebTopBar(
         actions = {
             IconButton(onClick = webViewNavigator::reload) {
                 Icon(
-                    painter = painterResource(Res.drawable.reload),
+                    painter = painterResource(Res.drawable.ic_refresh_linear),
                     contentDescription = stringResource(Res.string.reload_web_page)
                 )
             }
             IconButton(onClick = onOpenInExternalClick) {
                 Icon(
-                    painter = painterResource(Res.drawable.world),
+                    painter = painterResource(Res.drawable.ic_square_top_down_linear),
                     contentDescription = stringResource(Res.string.open_with_the_default_browser)
                 )
             }
@@ -227,9 +225,8 @@ fun WebTopBar(
                 onClick = onClickComments,
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.message),
+                    painter = painterResource(Res.drawable.ic_chat_line_linear),
                     contentDescription = stringResource(Res.string.browse_comments),
-                    modifier = Modifier.size(24.dp)
                 )
             }
         }

@@ -63,11 +63,11 @@ import domain.models.getUrl
 import extensions.trimmedHostName
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
-import hackernewskmp.composeapp.generated.resources.chevron_down
-import hackernewskmp.composeapp.generated.resources.clock
-import hackernewskmp.composeapp.generated.resources.link
+import hackernewskmp.composeapp.generated.resources.ic_alt_arrow_down_linear
+import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
+import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
+import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
 import hackernewskmp.composeapp.generated.resources.loading
-import hackernewskmp.composeapp.generated.resources.message
 import hackernewskmp.composeapp.generated.resources.points
 import hackernewskmp.composeapp.generated.resources.retry
 import io.ktor.http.Url
@@ -147,7 +147,7 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
                 Text(state.currentCategory.title)
                 Spacer(Modifier.width(8.dp))
                 Icon(
-                    painter = painterResource(Res.drawable.chevron_down),
+                    painter = painterResource(Res.drawable.ic_alt_arrow_down_linear),
                     contentDescription = null,
                 )
             }
@@ -246,9 +246,11 @@ fun ItemRowWidget(
         ) {
             item.getUrl()?.let { urlString ->
                 Icon(
-                    painter = painterResource(Res.drawable.link),
+                    painter = painterResource(Res.drawable.ic_link_minimalistic_linear),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .size(16.dp),
                 )
                 Text(
                     Url(urlString).trimmedHostName(),
@@ -258,10 +260,11 @@ fun ItemRowWidget(
                 )
             }
             Icon(
-                painter = painterResource(Res.drawable.clock),
+                painter = painterResource(Res.drawable.ic_clock_circle_linear),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = if (item.getUrl() == null) 0.dp else 8.dp)
+                modifier = Modifier
+                    .size(16.dp)
             )
             Text(
                 item.getFormattedDiffTime(),
@@ -294,9 +297,11 @@ fun ItemRowWidget(
                             modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
                         ) {
                             Icon(
-                                painter = painterResource(Res.drawable.message),
+                                painter = painterResource(Res.drawable.ic_chat_line_linear),
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .size(16.dp)
                             )
                             Text(
                                 text = item.getCommentCount().toString(),

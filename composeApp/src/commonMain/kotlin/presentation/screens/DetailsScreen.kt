@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -64,16 +62,15 @@ import domain.models.getUrl
 import domain.models.getUserName
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
-import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.back
-import hackernewskmp.composeapp.generated.resources.clock
-import hackernewskmp.composeapp.generated.resources.link
-import hackernewskmp.composeapp.generated.resources.message
+import hackernewskmp.composeapp.generated.resources.ic_arrow_left_linear
+import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
+import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
+import hackernewskmp.composeapp.generated.resources.ic_like_outline
+import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
+import hackernewskmp.composeapp.generated.resources.ic_user_circle_linear
 import hackernewskmp.composeapp.generated.resources.no_comment
 import hackernewskmp.composeapp.generated.resources.retry
-import hackernewskmp.composeapp.generated.resources.thumb_up_outline
-import hackernewskmp.composeapp.generated.resources.user_circle
-import io.ktor.http.Url
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
@@ -150,7 +147,7 @@ fun DetailsTopBar(
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
-                    painter = painterResource(Res.drawable.arrow_back),
+                    painter = painterResource(Res.drawable.ic_arrow_left_linear),
                     contentDescription = stringResource(Res.string.back)
                 )
             }
@@ -159,7 +156,7 @@ fun DetailsTopBar(
             if (onClickLink != null) {
                 IconButton(onClick = onClickLink) {
                     Icon(
-                        painter = painterResource(Res.drawable.link),
+                        painter = painterResource(Res.drawable.ic_link_minimalistic_linear),
                         contentDescription = null
                     )
                 }
@@ -189,7 +186,7 @@ fun CommentList(
         state = listState,
         contentPadding = contentPadding,
     ) {
-        item { ContentWidget(item, state.pollOptions, onClickLink) }
+        item { ContentWidget(item, state.pollOptions) }
         itemsIndexed(items = state.comments, key = { _, comment -> comment.id }) { _, comment ->
             CommentWidget(comment)
         }
@@ -198,7 +195,7 @@ fun CommentList(
 }
 
 @Composable
-fun ContentWidget(item: Item, pollOptions: List<PollOption>, onClickLink: () -> Unit) {
+fun ContentWidget(item: Item, pollOptions: List<PollOption>) {
     Column(Modifier.padding(horizontal = 16.dp)) {
         Text(
             text = item.getTitle(),
@@ -210,21 +207,21 @@ fun ContentWidget(item: Item, pollOptions: List<PollOption>, onClickLink: () -> 
         ) {
             HeaderChip(
                 label = item.getPoint().toString(),
-                icon = painterResource(Res.drawable.thumb_up_outline)
+                icon = painterResource(Res.drawable.ic_like_outline)
             )
             item.getCommentCount()?.let {
                 HeaderChip(
                     label = it.toString(),
-                    icon = painterResource(Res.drawable.message)
+                    icon = painterResource(Res.drawable.ic_chat_line_linear)
                 )
             }
             HeaderChip(
                 label = item.getFormattedDiffTimeShort(),
-                icon = painterResource(Res.drawable.clock)
+                icon = painterResource(Res.drawable.ic_clock_circle_linear)
             )
             HeaderChip(
                 label = item.getUserName(),
-                icon = painterResource(Res.drawable.user_circle)
+                icon = painterResource(Res.drawable.ic_user_circle_linear)
             )
         }
         if (item is Poll) {
@@ -327,8 +324,9 @@ fun CommentWidget(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.user_circle),
+                    painter = painterResource(Res.drawable.ic_user_circle_linear),
                     contentDescription = null,
+                    modifier = Modifier.size(16.dp),
                 )
                 Text(
                     text = comment.getUserName(),
