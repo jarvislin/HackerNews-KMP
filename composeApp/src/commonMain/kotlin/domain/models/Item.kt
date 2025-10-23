@@ -74,7 +74,7 @@ fun Item.getInstant(): Instant = when (this) {
 }.toInstant()
 
 @OptIn(ExperimentalTime::class)
-fun Item.getFormatedDiffTime(): String =
+fun Item.getFormattedDiffTime(): String =
     when (val diff = Clock.System.now().minus(getInstant()).toLong(DurationUnit.SECONDS)) {
         in 0..60 -> "$diff seconds ago"
         in 60..3600 -> "${diff / 60} minutes ago"
@@ -83,7 +83,16 @@ fun Item.getFormatedDiffTime(): String =
     }
 
 @OptIn(ExperimentalTime::class)
-fun Item.getFormatedTime(): String =
+fun Item.getFormattedDiffTimeShort(): String =
+    when (val diff = Clock.System.now().minus(getInstant()).toLong(DurationUnit.SECONDS)) {
+        in 0..60 -> "${diff}s"
+        in 60..3600 -> "${diff / 60}m"
+        in 3600..86400 -> "${diff / 3600}h"
+        else -> "${diff / 86400} d"
+    }
+
+@OptIn(ExperimentalTime::class)
+fun Item.getFormattedTime(): String =
     getInstant().toLocalDateTime(TimeZone.currentSystemDefault()).format()
 
 fun Item.getTitle(): String = when (this) {

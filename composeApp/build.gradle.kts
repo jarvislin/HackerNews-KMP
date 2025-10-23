@@ -52,7 +52,7 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.kotlinx.datetime)
             implementation(libs.compose.webview.multiplatform)
-            implementation(libs.richeditor.compose)
+            implementation(libs.htmlconverter)
         }
     }
 }

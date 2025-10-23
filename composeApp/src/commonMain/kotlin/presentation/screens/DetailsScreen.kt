@@ -2,6 +2,8 @@
 
 package presentation.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,14 +16,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -38,20 +44,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.mohamedrejeb.richeditor.model.rememberRichTextState
-import com.mohamedrejeb.richeditor.ui.material3.RichText
+import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
 import domain.models.Comment
 import domain.models.Item
 import domain.models.Poll
 import domain.models.PollOption
 import domain.models.getCommentCount
 import domain.models.getCommentIds
-import domain.models.getFormatedTime
+import domain.models.getFormattedDiffTimeShort
 import domain.models.getPoint
 import domain.models.getText
 import domain.models.getTitle
@@ -61,12 +66,12 @@ import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.arrow_back
 import hackernewskmp.composeapp.generated.resources.back
-import hackernewskmp.composeapp.generated.resources.details
+import hackernewskmp.composeapp.generated.resources.clock
 import hackernewskmp.composeapp.generated.resources.link
 import hackernewskmp.composeapp.generated.resources.message
 import hackernewskmp.composeapp.generated.resources.no_comment
-import hackernewskmp.composeapp.generated.resources.points
 import hackernewskmp.composeapp.generated.resources.retry
+import hackernewskmp.composeapp.generated.resources.thumb_up_outline
 import hackernewskmp.composeapp.generated.resources.user_circle
 import io.ktor.http.Url
 import kotlinx.serialization.SerialName
@@ -74,11 +79,15 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import presentation.viewmodels.DetailsViewModel
 import presentation.viewmodels.MainViewModel
 import ui.trimmedTextStyle
 import utils.Constants
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.ExperimentalTime
 
 @Serializable
 data class DetailsRoute(
@@ -123,7 +132,7 @@ fun ScaffoldContent(
     onClickLink: () -> Unit
 ) {
     Scaffold(
-        topBar = { DetailsTopBar(onBack) },
+        topBar = { DetailsTopBar(onBack, onClickLink.takeIf { item.getUrl() != null }) },
         snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { padding ->
         CommentList(item, padding, viewModel, onClickLink)
@@ -131,7 +140,10 @@ fun ScaffoldContent(
 }
 
 @Composable
-fun DetailsTopBar(onBack: () -> Unit) {
+fun DetailsTopBar(
+    onBack: () -> Unit,
+    onClickLink: (() -> Unit)? = null
+) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
         title = { },
@@ -141,6 +153,16 @@ fun DetailsTopBar(onBack: () -> Unit) {
                     painter = painterResource(Res.drawable.arrow_back),
                     contentDescription = stringResource(Res.string.back)
                 )
+            }
+        },
+        actions = {
+            if (onClickLink != null) {
+                IconButton(onClick = onClickLink) {
+                    Icon(
+                        painter = painterResource(Res.drawable.link),
+                        contentDescription = null
+                    )
+                }
             }
         }
     )
@@ -168,8 +190,8 @@ fun CommentList(
         contentPadding = contentPadding,
     ) {
         item { ContentWidget(item, state.pollOptions, onClickLink) }
-        items(state.comments.size) { index ->
-            CommentWidget(state.comments[index])
+        itemsIndexed(items = state.comments, key = { _, comment -> comment.id }) { _, comment ->
+            CommentWidget(comment)
         }
         if (state.comments.size < item.getCommentIds().size) item { ItemLoadingWidget() }
     }
@@ -177,89 +199,72 @@ fun CommentList(
 
 @Composable
 fun ContentWidget(item: Item, pollOptions: List<PollOption>, onClickLink: () -> Unit) {
-    val richTextState = rememberRichTextState()
-    richTextState.config.apply {
-        linkColor = MaterialTheme.colorScheme.tertiary
-        codeSpanStrokeColor = Color.Transparent
-        codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
-        codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
-    }
-
     Column(Modifier.padding(horizontal = 16.dp)) {
         Text(
-            text = item.getTitle(), Modifier.padding(vertical = 8.dp),
-            fontSize = MaterialTheme.typography.titleLarge.fontSize,
-            fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
-            lineHeight = 28.sp
+            text = item.getTitle(),
+            modifier = Modifier.padding(vertical = 8.dp),
+            style = MaterialTheme.typography.titleLarge,
         )
-        Row(modifier = Modifier.padding(bottom = 8.dp)) {
-            Card {
-                Text(
-                    text = stringResource(Res.string.points, item.getPoint()),
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    style = trimmedTextStyle
+        Row(
+            horizontalArrangement = spacedBy(8.dp)
+        ) {
+            HeaderChip(
+                label = item.getPoint().toString(),
+                icon = painterResource(Res.drawable.thumb_up_outline)
+            )
+            item.getCommentCount()?.let {
+                HeaderChip(
+                    label = it.toString(),
+                    icon = painterResource(Res.drawable.message)
                 )
             }
-            Card(
-                modifier = Modifier.padding(start = 8.dp),
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.message),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = "${item.getCommentCount()}",
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        modifier = Modifier.padding(start = 4.dp),
-                        style = trimmedTextStyle
-                    )
-                }
-            }
-        }
-        Row(modifier = Modifier.padding(top = 8.dp)) {
-            Icon(
-                painter = painterResource(Res.drawable.user_circle),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.CenterVertically)
+            HeaderChip(
+                label = item.getFormattedDiffTimeShort(),
+                icon = painterResource(Res.drawable.clock)
             )
-            Text(
-                modifier = Modifier.padding(start = 4.dp),
-                text = item.getUserName(),
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                style = trimmedTextStyle
+            HeaderChip(
+                label = item.getUserName(),
+                icon = painterResource(Res.drawable.user_circle)
             )
         }
         if (item is Poll) {
-            Column {
-                Spacer(modifier = Modifier.height(8.dp))
-                pollOptions.forEachIndexed { index: Int, option: PollOption ->
-                    PollOptionWidget(option, pollOptions.size, index)
-                }
-            }
+            PollContent(pollOptions)
         }
         item.getText()?.let { text ->
-            richTextState.setHtml(text)
-            RichText(
-                state = richTextState,
-                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
-                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+            val annotated = remember(text) { htmlToAnnotatedString(text) }
+            Text(
+                text = annotated,
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
             )
         }
-        item.getUrl()?.let { LinkWidget(item, onClickLink) }
-        Text(
-            text = item.getFormatedTime(),
-            modifier = Modifier.padding(bottom = 12.dp).padding(top = 8.dp),
-            fontSize = MaterialTheme.typography.bodyMedium.fontSize
-        )
-        HorizontalDivider()
+    }
+}
+
+@Composable
+private fun HeaderChip(
+    label: String,
+    modifier: Modifier = Modifier,
+    icon: Painter? = null,
+) {
+    AssistChip(
+        modifier = modifier,
+        onClick = { },
+        label = { Text(label) },
+        leadingIcon = icon?.let{ { Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp)) } }
+    )
+}
+
+@Composable
+private fun PollContent(
+    pollOptions: List<PollOption>,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Spacer(modifier = Modifier.height(8.dp))
+        pollOptions.forEachIndexed { index: Int, option: PollOption ->
+            PollOptionWidget(option, pollOptions.size, index)
+        }
     }
 }
 
@@ -292,49 +297,14 @@ fun PollOptionWidget(option: PollOption, size: Int, index: Int) {
 }
 
 @Composable
-fun LinkWidget(item: Item, onClickLink: () -> Unit) {
-    Spacer(modifier = Modifier.height(8.dp))
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
-        modifier = Modifier.height(40.dp),
-        shape = RoundedCornerShape(20.dp),
-        onClick = onClickLink,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxHeight(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Spacer(modifier = Modifier.size(16.dp))
-            Icon(
-                painter = painterResource(Res.drawable.link),
-                contentDescription = "Link",
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-            Text(
-                modifier = Modifier.padding(start = 8.dp, end = 24.dp),
-                fontSize = MaterialTheme.typography.labelLarge.fontSize,
-                fontFamily = MaterialTheme.typography.labelLarge.fontFamily,
-                fontWeight = MaterialTheme.typography.labelLarge.fontWeight,
-                style = trimmedTextStyle,
-                text = Url(item.getUrl()!!).host,
-            )
-        }
-    }
-}
-
-@Composable
-fun CommentWidget(comment: Comment) {
+fun CommentWidget(
+    comment: Comment,
+    modifier: Modifier = Modifier,
+) {
     val paddingStart = 12.dp * (comment.depth + 1)
     val localUriHandler = LocalUriHandler.current
-    val richTextState = rememberRichTextState()
-    richTextState.config.apply {
-        linkColor = MaterialTheme.colorScheme.tertiary
-        codeSpanStrokeColor = Color.Transparent
-        codeSpanBackgroundColor = MaterialTheme.colorScheme.tertiaryContainer
-        codeSpanColor = MaterialTheme.colorScheme.onTertiaryContainer
-    }
-    richTextState.setHtml(comment.getText() ?: stringResource(Res.string.no_comment))
+    val html = comment.getText() ?: stringResource(Res.string.no_comment)
+    val annotated = remember(html) { htmlToAnnotatedString(html) }
 
     val uriHandler by remember {
         mutableStateOf(object : UriHandler {
@@ -343,33 +313,39 @@ fun CommentWidget(comment: Comment) {
             }
         })
     }
-    Column(Modifier.padding(horizontal = 16.dp).padding(start = paddingStart, top = 12.dp)) {
-        Row {
-            Icon(
-                painter = painterResource(Res.drawable.user_circle),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-            Text(
-                text = comment.getUserName(),
-                modifier = Modifier.padding(start = 4.dp),
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                style = trimmedTextStyle
-            )
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp)
+            .padding(start = paddingStart, top = 12.dp)
+    ) {
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            LocalTextStyle provides MaterialTheme.typography.bodySmall
+        ) {
+            Row(
+                horizontalArrangement = spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.user_circle),
+                    contentDescription = null,
+                )
+                Text(
+                    text = comment.getUserName(),
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = comment.getFormattedDiffTimeShort(),
+                )
+            }
         }
         CompositionLocalProvider(LocalUriHandler provides uriHandler) {
-            RichText(
+            Text(
                 modifier = Modifier.padding(vertical = 12.dp),
-                state = richTextState,
-                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                text = annotated,
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
-        Text(
-            text = comment.getFormatedTime(),
-            modifier = Modifier.padding(bottom = 12.dp),
-            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-        )
         HorizontalDivider()
     }
 }
@@ -379,5 +355,40 @@ fun decodeUrl(url: String): String {
     return url.replace(entityPattern) { matchResult ->
         val codePoint = matchResult.groupValues[1].toInt(16)
         CharArray(1) { codePoint.toChar() }.concatToString()
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+@Preview
+@Composable
+fun Preview_CommentWidget() {
+    val html = "<p>This is a sample comment text to demonstrate the styling.</p><p>This is another paragraph with <strong>bold</strong> and <em>italic</em> text.</p>"
+
+    val comment = Comment(
+        id = 1L,
+        userName = "john_doe",
+        text = html,
+        depth = 2,
+        time = (Clock.System.now() - 23.hours).epochSeconds,
+        commentIds = emptyList(),
+        parentId = 0L,
+    )
+
+    MaterialTheme {
+        Column(
+            verticalArrangement = spacedBy(24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            CommentWidget(comment = comment)
+
+            val annotated = remember(html) { htmlToAnnotatedString(html) }
+            Text(
+                text = annotated,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }

@@ -50,15 +50,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import domain.models.Category
 import domain.models.Item
 import domain.models.getCommentCount
-import domain.models.getFormatedDiffTime
+import domain.models.getFormattedDiffTime
 import domain.models.getPoint
 import domain.models.getTitle
 import domain.models.getUrl
@@ -266,7 +264,8 @@ fun ItemRowWidget(
                 modifier = Modifier.padding(start = if (item.getUrl() == null) 0.dp else 8.dp)
             )
             Text(
-                item.getFormatedDiffTime(), fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                item.getFormattedDiffTime(),
+                fontSize = MaterialTheme.typography.bodySmall.fontSize,
                 modifier = Modifier.padding(start = 4.dp),
                 style = trimmedTextStyle
             )
@@ -326,8 +325,7 @@ fun ItemLoadingWidget() {
         )
         Text(
             text = stringResource(Res.string.loading),
-            fontStyle = MaterialTheme.typography.bodySmall.fontStyle,
-            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+            style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.align(Alignment.CenterVertically)
         )
     }
