@@ -1,9 +1,10 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package presentation.screens
+package presentation.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,13 +19,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -40,7 +38,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,13 +47,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import domain.models.Category
 import domain.models.Item
+import domain.models.Story
 import domain.models.getCommentCount
-import domain.models.getFormattedDiffTime
+import domain.models.getFormattedDiffTimeShort
 import domain.models.getPoint
 import domain.models.getTitle
 import domain.models.getUrl
@@ -66,18 +65,23 @@ import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.ic_alt_arrow_down_linear
 import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
 import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
+import hackernewskmp.composeapp.generated.resources.ic_like_outline
 import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
 import hackernewskmp.composeapp.generated.resources.loading
-import hackernewskmp.composeapp.generated.resources.points
 import hackernewskmp.composeapp.generated.resources.retry
 import io.ktor.http.Url
 import kotlinx.coroutines.flow.mapNotNull
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
+import ui.Preview
 import ui.trimmedTextStyle
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.ExperimentalTime
 
 @Composable
 fun MainScreen(onClickItem: (Item) -> Unit, onClickComment: (Item) -> Unit) {
@@ -227,94 +231,88 @@ fun PaginatedItemList(
 fun ItemRowWidget(
     item: Item,
     onClickItem: () -> Unit,
-    onClickComment: () -> Unit
+    onClickComment: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column(
-        Modifier.fillMaxWidth().clickable(onClick = onClickItem)
-    ) {
-        Spacer(Modifier.height(12.dp))
-        Text(
-            item.getTitle(),
-            Modifier.padding(horizontal = 16.dp),
-            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-            fontFamily = MaterialTheme.typography.headlineSmall.fontFamily
-        )
-        Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+    Row(modifier = modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Column(
+            verticalArrangement = spacedBy(8.dp),
+            modifier = Modifier
+                .weight(1f)
+                .clickable(onClick = onClickItem)
+                .padding(8.dp)
         ) {
-            item.getUrl()?.let { urlString ->
-                Icon(
-                    painter = painterResource(Res.drawable.ic_link_minimalistic_linear),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .size(16.dp),
-                )
-                Text(
-                    Url(urlString).trimmedHostName(),
-                    Modifier.padding(horizontal = 4.dp),
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    style = trimmedTextStyle
-                )
-            }
-            Icon(
-                painter = painterResource(Res.drawable.ic_clock_circle_linear),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .size(16.dp)
-            )
             Text(
-                item.getFormattedDiffTime(),
-                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                modifier = Modifier.padding(start = 4.dp),
-                style = trimmedTextStyle
+                text = item.getTitle(),
+                style = MaterialTheme.typography.titleMedium,
             )
-        }
-        Spacer(Modifier.height(8.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Card {
-                Text(
-                    text = stringResource(Res.string.points, item.getPoint()),
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    style = trimmedTextStyle
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = spacedBy(8.dp)
+            ) {
+                item.getUrl()?.let { urlString ->
+                    LabelledIcon(
+                        label = Url(urlString).trimmedHostName(),
+                        icon = painterResource(Res.drawable.ic_link_minimalistic_linear),
+                    )
+                }
+                LabelledIcon(
+                    label = item.getPoint().toString(),
+                    icon = painterResource(Res.drawable.ic_like_outline),
+                )
+                LabelledIcon(
+                    label = item.getFormattedDiffTimeShort(),
+                    icon = painterResource(Res.drawable.ic_clock_circle_linear),
                 )
             }
-            item.getCommentCount()?.let {
-                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-                    Card(
-                        modifier = Modifier.padding(start = 8.dp),
-                        onClick = onClickComment
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_chat_line_linear),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier
-                                    .size(16.dp)
-                            )
-                            Text(
-                                text = item.getCommentCount().toString(),
-                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                modifier = Modifier.padding(start = 4.dp),
-                                style = trimmedTextStyle
-                            )
-                        }
-                    }
-                }
+        }
+        item.getCommentCount()?.let { commentCount ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clickable(onClick = onClickComment)
+                    .padding(top = 8.dp, bottom = 8.dp)
+                    .minimumInteractiveComponentSize()
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_chat_line_linear),
+                    contentDescription = null,
+                )
+                Text(
+                    text = "$commentCount",
+                    style = MaterialTheme.typography.labelLarge,
+                )
+
             }
         }
-        Spacer(Modifier.size(12.dp))
+
+    }
+}
+
+@Composable
+private fun LabelledIcon(
+    label: String,
+    icon: Painter? = null,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = spacedBy(4.dp)
+    ) {
+        if (icon != null) {
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(16.dp),
+            )
+        }
+        Text(
+            text = label,
+            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+            style = trimmedTextStyle
+        )
     }
 }
 
@@ -335,3 +333,31 @@ fun ItemLoadingWidget() {
         )
     }
 }
+
+
+@OptIn(ExperimentalTime::class)
+@Preview
+@Composable
+fun Preview_ItemRowWidget() {
+    Preview(false) {
+        ItemRowWidget(
+            item = previewItems.first { it is Story },
+            onClickItem = {},
+            onClickComment = {}
+        )
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+val previewItems: List<Item> = listOf(
+    Story(
+        id = 12345L,
+        title = "Sample Story Title",
+        url = "https://www.example.com",
+        userName = "sample_user",
+        time = (Clock.System.now() - 5.hours).epochSeconds,
+        score = 123,
+        countOfComment = 45,
+        commentIds = listOf(),
+    )
+)

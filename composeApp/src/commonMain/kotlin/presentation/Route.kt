@@ -10,11 +10,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import domain.models.getUrl
-import presentation.screens.DetailsRoute
-import presentation.screens.DetailsScreen
-import presentation.screens.MainScreen
-import presentation.screens.WebRoute
-import presentation.screens.WebScreen
+import presentation.screens.details.DetailsRoute
+import presentation.screens.details.DetailsScreen
+import presentation.screens.main.MainScreen
+import presentation.screens.web.WebRoute
+import presentation.screens.web.WebScreen
 
 enum class RouteScreen {
     Main,

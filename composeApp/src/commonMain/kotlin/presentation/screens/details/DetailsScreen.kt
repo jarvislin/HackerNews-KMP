@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package presentation.screens
+package presentation.screens.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -78,6 +78,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
+import presentation.screens.main.ItemLoadingWidget
 import presentation.viewmodels.DetailsViewModel
 import presentation.viewmodels.MainViewModel
 import ui.trimmedTextStyle
@@ -129,10 +130,15 @@ fun ScaffoldContent(
     onClickLink: () -> Unit
 ) {
     Scaffold(
-        topBar = { DetailsTopBar(onBack, onClickLink.takeIf { item.getUrl() != null }) },
+        topBar = {
+            DetailsTopBar(
+                onBack = onBack,
+                onClickLink = onClickLink.takeIf { item.getUrl() != null }
+            )
+        },
         snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { padding ->
-        CommentList(item, padding, viewModel, onClickLink)
+        CommentList(item, padding, viewModel)
     }
 }
 
@@ -170,7 +176,6 @@ fun CommentList(
     item: Item,
     contentPadding: PaddingValues,
     viewModel: DetailsViewModel,
-    onClickLink: () -> Unit
 ) {
     val listState = rememberLazyListState()
     val state by viewModel.state
@@ -195,13 +200,16 @@ fun CommentList(
 }
 
 @Composable
-fun ContentWidget(item: Item, pollOptions: List<PollOption>) {
+fun ContentWidget(
+    item: Item,
+    pollOptions: List<PollOption>
+) {
     Column(Modifier.padding(horizontal = 16.dp)) {
         Text(
             text = item.getTitle(),
-            modifier = Modifier.padding(vertical = 8.dp),
             style = MaterialTheme.typography.titleLarge,
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
             horizontalArrangement = spacedBy(8.dp)
         ) {

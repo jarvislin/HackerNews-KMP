@@ -8,6 +8,7 @@ import modules.viewModelModule
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 import presentation.RootScreen
+import ui.AppTheme
 
 @Composable
 @Preview
@@ -20,10 +21,7 @@ fun App() {
             viewModelModule
         )
     }) {
-        MaterialTheme(
-            typography = getPlatform().getTypography(),
-            colorScheme = getPlatform().getColorScheme(isSystemInDarkTheme())
-        ) {
+        AppTheme {
             RootScreen()
         }
     }

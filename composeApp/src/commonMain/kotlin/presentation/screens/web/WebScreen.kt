@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package presentation.screens
+package presentation.screens.web
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,8 +47,8 @@ import hackernewskmp.composeapp.generated.resources.browse_comments
 import hackernewskmp.composeapp.generated.resources.go_back
 import hackernewskmp.composeapp.generated.resources.ic_arrow_left_linear
 import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
+import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
 import hackernewskmp.composeapp.generated.resources.ic_refresh_linear
-import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
 import hackernewskmp.composeapp.generated.resources.open_with_the_default_browser
 import hackernewskmp.composeapp.generated.resources.reload_web_page
 import hackernewskmp.composeapp.generated.resources.webview_error
@@ -217,7 +217,7 @@ fun WebTopBar(
             }
             IconButton(onClick = onOpenInExternalClick) {
                 Icon(
-                    painter = painterResource(Res.drawable.ic_square_top_down_linear),
+                    painter = painterResource(Res.drawable.ic_link_minimalistic_linear),
                     contentDescription = stringResource(Res.string.open_with_the_default_browser)
                 )
             }
