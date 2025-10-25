@@ -14,7 +14,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import getPlatform
-import presentation.RootScreen
 
 val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -93,7 +92,7 @@ val darkScheme = darkColorScheme(
 )
 
 @Composable
-fun Preview(
+fun AppPreview(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable BoxScope.() -> Unit
 ) {

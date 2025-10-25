@@ -2,75 +2,71 @@
 
 package presentation.screens.details
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
-import domain.models.Comment
+import androidx.compose.ui.zIndex
+import com.multiplatform.webview.web.rememberWebViewNavigator
+import com.multiplatform.webview.web.rememberWebViewState
 import domain.models.Item
-import domain.models.Poll
-import domain.models.PollOption
 import domain.models.getCommentCount
-import domain.models.getCommentIds
-import domain.models.getFormattedDiffTimeShort
-import domain.models.getPoint
-import domain.models.getText
-import domain.models.getTitle
 import domain.models.getUrl
+import extensions.trimmedHostName
+import getPlatform
 import domain.models.getUserName
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.back
 import hackernewskmp.composeapp.generated.resources.ic_arrow_left_linear
 import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
-import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
-import hackernewskmp.composeapp.generated.resources.ic_like_outline
 import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
-import hackernewskmp.composeapp.generated.resources.ic_user_circle_linear
-import hackernewskmp.composeapp.generated.resources.no_comment
+import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
 import hackernewskmp.composeapp.generated.resources.retry
+import io.ktor.http.Url
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
@@ -78,14 +74,12 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
-import presentation.screens.main.ItemLoadingWidget
 import presentation.viewmodels.DetailsViewModel
 import presentation.viewmodels.MainViewModel
+import presentation.widgets.PlatformSwipeContainer
+import ui.AppPreview
 import ui.trimmedTextStyle
 import utils.Constants
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.ExperimentalTime
 
 @Serializable
 data class DetailsRoute(
@@ -97,16 +91,18 @@ data class DetailsRoute(
 fun DetailsScreen(
     itemId: Long,
     onBack: () -> Unit,
-    onClickItem: (Item) -> Unit
 ) {
     val viewModel = koinInject<DetailsViewModel>()
     val mainViewModel = koinInject<MainViewModel>()
+    val uriHandler = LocalUriHandler.current
     val state by viewModel.state
     val snackBarHostState = remember { SnackbarHostState() }
     val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
-    val onClickLink = { onClickItem(item) }
+    val onClickLink = item.getUrl()?.let {
+        { uriHandler.openUri(it) }
+    }
 
-    ScaffoldContent(snackBarHostState, viewModel, item, onBack, onClickLink)
+    DetailsScreenContent(snackBarHostState, viewModel, item, onBack, onClickLink)
 
     LaunchedEffect(Unit) {
         if (state.error != null) {
@@ -121,40 +117,142 @@ fun DetailsScreen(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ScaffoldContent(
+fun DetailsScreenContent(
     snackBarHostState: SnackbarHostState,
     viewModel: DetailsViewModel,
     item: Item,
     onBack: () -> Unit,
-    onClickLink: () -> Unit
+    onClickLink: (() -> Unit)?
 ) {
+    var selectedTabIndex by remember { mutableStateOf(1) }
+    val urlString = item.getUrl() ?: error(Constants.URL_NULL_MESSAGE)
+    val webViewNavigator = rememberWebViewNavigator()
+    val combinedOnBack = {
+        if (selectedTabIndex == 1 && webViewNavigator.canGoBack) {
+            webViewNavigator.navigateBack()
+        }
+        else {
+            onBack()
+        }
+    }
+    BackHandler { combinedOnBack() }
+
     Scaffold(
         topBar = {
             DetailsTopBar(
-                onBack = onBack,
+                selectedTabIndex = selectedTabIndex,
+                trimmedHostName = Url(item.getUrl() ?: "").trimmedHostName(),
+                commentCount = item.getCommentCount() ?: 0,
+                onTabSelected = { selectedTabIndex = it },
+                onBack = combinedOnBack,
                 onClickLink = onClickLink.takeIf { item.getUrl() != null }
             )
         },
         snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { padding ->
-        CommentList(item, padding, viewModel)
+        FadeVisibilityKeepingState(
+            visible = selectedTabIndex == 0,
+        ) {
+            CommentsTabContent(
+                item = item,
+                contentPadding = PaddingValues(
+                    top = 8.dp + padding.calculateTopPadding(),
+                    start = padding.calculateStartPadding(LocalLayoutDirection.current),
+                    end = padding.calculateEndPadding(LocalLayoutDirection.current),
+                    bottom = padding.calculateBottomPadding()
+                ),
+                viewModel = viewModel,
+            )
+        }
+        FadeVisibilityKeepingState(
+            visible = selectedTabIndex == 1,
+        ) {
+            WebviewTabContent(
+                url = urlString,
+                modifier = Modifier
+                    .padding(padding)
+            )
+        }
+    }
+}
+
+@Composable
+fun FadeVisibilityKeepingState(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    durationMillis: Int = 300,
+    content: @Composable () -> Unit
+) {
+    val targetAlpha = if (visible) 1f else 0f
+    val alpha by animateFloatAsState(targetAlpha, animationSpec = tween(durationMillis))
+
+    Box(
+        modifier = modifier
+            .alpha(alpha)
+            // Drop below others when hidden to let touches pass through
+            .zIndex(if (alpha < 0.5f) -1f else 0f)
+    ) {
+        content()
+    }
+}
+
+fun Modifier.passThroughPointerEvents(): Modifier = pointerInput(Unit) {
+    awaitPointerEventScope {
+        while (true) {
+            // Just await events without consuming them
+            awaitPointerEvent()
+        }
     }
 }
 
 @Composable
 fun DetailsTopBar(
+    selectedTabIndex: Int,
+    trimmedHostName: String,
+    commentCount: Int,
+    onTabSelected: (Int) -> Unit,
     onBack: () -> Unit,
+    modifier: Modifier = Modifier,
     onClickLink: (() -> Unit)? = null
 ) {
-    TopAppBar(
+    CenterAlignedTopAppBar(
+        modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
-        title = { },
+        title = {
+            PrimaryTabRow(
+                containerColor = Color.Transparent,
+                selectedTabIndex = selectedTabIndex,
+                divider = {},
+                indicator = {
+                    TabRowDefaults.PrimaryIndicator(
+                        modifier = Modifier.tabIndicatorOffset(selectedTabIndex, matchContentSize = true),
+                        width = Dp.Unspecified,
+                    )
+                },
+                tabs = {
+                    DetailsTab(
+                        selected = selectedTabIndex == 0,
+                        label = "$commentCount comments",
+                        onclick = { onTabSelected(0) },
+                        icon = painterResource(Res.drawable.ic_chat_line_linear)
+                    )
+                    DetailsTab(
+                        selected = selectedTabIndex == 1,
+                        label = trimmedHostName,
+                        onclick = { onTabSelected(1) },
+                        icon = painterResource(Res.drawable.ic_link_minimalistic_linear)
+                    )
+                }
+            )
+        },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_arrow_left_linear),
-                    contentDescription = stringResource(Res.string.back)
+                    contentDescription = stringResource(Res.string.back),
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         },
@@ -162,8 +260,9 @@ fun DetailsTopBar(
             if (onClickLink != null) {
                 IconButton(onClick = onClickLink) {
                     Icon(
-                        painter = painterResource(Res.drawable.ic_link_minimalistic_linear),
-                        contentDescription = null
+                        painter = painterResource(Res.drawable.ic_square_top_down_linear),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -172,229 +271,45 @@ fun DetailsTopBar(
 }
 
 @Composable
-fun CommentList(
-    item: Item,
-    contentPadding: PaddingValues,
-    viewModel: DetailsViewModel,
-) {
-    val listState = rememberLazyListState()
-    val state by viewModel.state
-    if (item is Poll && state.loadingPollOptions.not() && state.error == null && state.pollOptions.isEmpty()) {
-        viewModel.loadPollOptions(item.optionIds)
-    }
-
-    if (state.loadingComments.not() && state.error == null && item.getCommentIds().isNotEmpty()) {
-        viewModel.loadComments(item.getCommentIds())
-    }
-
-    LazyColumn(
-        state = listState,
-        contentPadding = contentPadding,
-    ) {
-        item { ContentWidget(item, state.pollOptions) }
-        itemsIndexed(items = state.comments, key = { _, comment -> comment.id }) { _, comment ->
-            CommentWidget(comment)
-        }
-        if (state.comments.size < item.getCommentIds().size) item { ItemLoadingWidget() }
-    }
-}
-
-@Composable
-fun ContentWidget(
-    item: Item,
-    pollOptions: List<PollOption>
-) {
-    Column(Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = item.getTitle(),
-            style = MaterialTheme.typography.titleLarge,
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            horizontalArrangement = spacedBy(8.dp)
-        ) {
-            HeaderChip(
-                label = item.getPoint().toString(),
-                icon = painterResource(Res.drawable.ic_like_outline)
-            )
-            item.getCommentCount()?.let {
-                HeaderChip(
-                    label = it.toString(),
-                    icon = painterResource(Res.drawable.ic_chat_line_linear)
-                )
-            }
-            HeaderChip(
-                label = item.getFormattedDiffTimeShort(),
-                icon = painterResource(Res.drawable.ic_clock_circle_linear)
-            )
-            HeaderChip(
-                label = item.getUserName(),
-                icon = painterResource(Res.drawable.ic_user_circle_linear)
-            )
-        }
-        if (item is Poll) {
-            PollContent(pollOptions)
-        }
-        item.getText()?.let { text ->
-            val annotated = remember(text) { htmlToAnnotatedString(text) }
-            Text(
-                text = annotated,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun HeaderChip(
+private fun DetailsTab(
+    selected: Boolean,
     label: String,
+    onclick: () -> Unit,
+    icon: Painter,
     modifier: Modifier = Modifier,
-    icon: Painter? = null,
 ) {
-    AssistChip(
+    Tab(
         modifier = modifier,
-        onClick = { },
-        label = { Text(label) },
-        leadingIcon = icon?.let{ { Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp)) } }
+        selected = selected,
+        onClick = onclick,
+        icon = {
+            Icon(
+                painter = icon,
+                contentDescription = null,
+            )
+        },
+        text = {
+            Text(
+                text = label,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     )
 }
 
+@Preview(widthDp = 432)
 @Composable
-private fun PollContent(
-    pollOptions: List<PollOption>,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier) {
-        Spacer(modifier = Modifier.height(8.dp))
-        pollOptions.forEachIndexed { index: Int, option: PollOption ->
-            PollOptionWidget(option, pollOptions.size, index)
-        }
-    }
-}
-
-@Composable
-fun PollOptionWidget(option: PollOption, size: Int, index: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Card(colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)) {
-            Box(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    .defaultMinSize(minWidth = 24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "${option.score}",
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    style = trimmedTextStyle,
-                )
-            }
-        }
-        Text(
-            text = option.text,
-            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-            modifier = Modifier.padding(start = 10.dp)
+fun Preview_DetailsTopBar() {
+    AppPreview {
+        DetailsTopBar(
+            selectedTabIndex = 0,
+            trimmedHostName = "example.com",
+            commentCount = 10,
+            onTabSelected = {},
+            onBack = {},
+            onClickLink = {},
+            modifier = Modifier.border(1.dp, Color.Black)
         )
-    }
-    if (index < size - 1) {
-        Spacer(modifier = Modifier.height(12.dp))
-    }
-}
-
-@Composable
-fun CommentWidget(
-    comment: Comment,
-    modifier: Modifier = Modifier,
-) {
-    val paddingStart = 12.dp * (comment.depth + 1)
-    val localUriHandler = LocalUriHandler.current
-    val html = comment.getText() ?: stringResource(Res.string.no_comment)
-    val annotated = remember(html) { htmlToAnnotatedString(html) }
-
-    val uriHandler by remember {
-        mutableStateOf(object : UriHandler {
-            override fun openUri(uri: String) {
-                localUriHandler.openUri(decodeUrl(uri))
-            }
-        })
-    }
-    Column(
-        modifier = modifier
-            .padding(horizontal = 16.dp)
-            .padding(start = paddingStart, top = 12.dp)
-    ) {
-        CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-            LocalTextStyle provides MaterialTheme.typography.bodySmall
-        ) {
-            Row(
-                horizontalArrangement = spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_user_circle_linear),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                )
-                Text(
-                    text = comment.getUserName(),
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = comment.getFormattedDiffTimeShort(),
-                )
-            }
-        }
-        CompositionLocalProvider(LocalUriHandler provides uriHandler) {
-            Text(
-                modifier = Modifier.padding(vertical = 12.dp),
-                text = annotated,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-        HorizontalDivider()
-    }
-}
-
-fun decodeUrl(url: String): String {
-    val entityPattern = Regex(Constants.REGEX_PATTERN)
-    return url.replace(entityPattern) { matchResult ->
-        val codePoint = matchResult.groupValues[1].toInt(16)
-        CharArray(1) { codePoint.toChar() }.concatToString()
-    }
-}
-
-@OptIn(ExperimentalTime::class)
-@Preview
-@Composable
-fun Preview_CommentWidget() {
-    val html = "<p>This is a sample comment text to demonstrate the styling.</p><p>This is another paragraph with <strong>bold</strong> and <em>italic</em> text.</p>"
-
-    val comment = Comment(
-        id = 1L,
-        userName = "john_doe",
-        text = html,
-        depth = 2,
-        time = (Clock.System.now() - 23.hours).epochSeconds,
-        commentIds = emptyList(),
-        parentId = 0L,
-    )
-
-    MaterialTheme {
-        Column(
-            verticalArrangement = spacedBy(24.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp)
-        ) {
-            CommentWidget(comment = comment)
-
-            val annotated = remember(html) { htmlToAnnotatedString(html) }
-            Text(
-                text = annotated,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
     }
 }

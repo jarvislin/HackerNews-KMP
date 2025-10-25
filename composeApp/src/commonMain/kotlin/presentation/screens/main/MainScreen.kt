@@ -24,6 +24,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -48,7 +49,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import domain.models.Category
@@ -67,6 +70,7 @@ import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
 import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
 import hackernewskmp.composeapp.generated.resources.ic_like_outline
 import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
+import hackernewskmp.composeapp.generated.resources.ic_refresh_linear
 import hackernewskmp.composeapp.generated.resources.loading
 import hackernewskmp.composeapp.generated.resources.retry
 import io.ktor.http.Url
@@ -77,7 +81,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
-import ui.Preview
+import ui.AppPreview
 import ui.trimmedTextStyle
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
@@ -134,7 +138,17 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
     var expanded by remember { mutableStateOf(false) }
 
     TopAppBar(
+        expandedHeight = 64.dp,
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
+        actions = {
+            IconButton(onClick = {  }) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_refresh_linear),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        },
         title = {
             Row(
                 modifier = Modifier
@@ -148,7 +162,10 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(state.currentCategory.title)
+                Text(
+                    text = state.currentCategory.title,
+                    style = MaterialTheme.typography.headlineMedium,
+                )
                 Spacer(Modifier.width(8.dp))
                 Icon(
                     painter = painterResource(Res.drawable.ic_alt_arrow_down_linear),
@@ -245,6 +262,7 @@ fun ItemRowWidget(
             Text(
                 text = item.getTitle(),
                 style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -290,7 +308,7 @@ fun ItemRowWidget(
 }
 
 @Composable
-private fun LabelledIcon(
+fun LabelledIcon(
     label: String,
     icon: Painter? = null,
     modifier: Modifier = Modifier
@@ -311,7 +329,9 @@ private fun LabelledIcon(
         Text(
             text = label,
             fontSize = MaterialTheme.typography.bodySmall.fontSize,
-            style = trimmedTextStyle
+            style = trimmedTextStyle,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -339,7 +359,7 @@ fun ItemLoadingWidget() {
 @Preview
 @Composable
 fun Preview_ItemRowWidget() {
-    Preview(false) {
+    AppPreview(false) {
         ItemRowWidget(
             item = previewItems.first { it is Story },
             onClickItem = {},

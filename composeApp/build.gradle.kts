@@ -53,6 +53,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.compose.webview.multiplatform)
             implementation(libs.htmlconverter)
+            implementation("org.jetbrains.compose.ui:ui-backhandler")
         }
     }
 }
