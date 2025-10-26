@@ -11,4 +11,8 @@
     <string name="details">Details</string>
     <string name="back">Back</string>
     <string name="no_comment">No Comment</string>
+    <plurals name="x_comments">
+        <item quantity="one">%1$d comment</item>
+        <item quantity="other">%1$d comments</item>
+    </plurals>
 </resources>

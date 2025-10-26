@@ -57,11 +57,13 @@ import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
 import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
 import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
 import hackernewskmp.composeapp.generated.resources.retry
+import hackernewskmp.composeapp.generated.resources.x_comments
 import io.ktor.http.Url
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -197,7 +199,7 @@ fun DetailsTopBar(
     onClickLink: (() -> Unit)? = null
 ) {
     val trimmedHostName = urlString?.toUrl()?.trimmedHostName()
-    val commentsLabel = "$commentCount comments"
+    val commentsLabel = pluralStringResource(Res.plurals.x_comments, commentCount, commentCount)
     CenterAlignedTopAppBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
