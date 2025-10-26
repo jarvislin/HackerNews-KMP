@@ -2,14 +2,8 @@
 
 package presentation.screens.details
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandIn
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,9 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,7 +43,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.multiplatform.webview.web.rememberWebViewNavigator
-import com.multiplatform.webview.web.rememberWebViewState
 import domain.models.Item
 import domain.models.getCommentCount
 import domain.models.getUrl
@@ -80,6 +71,7 @@ import presentation.widgets.PlatformSwipeContainer
 import ui.AppPreview
 import ui.trimmedTextStyle
 import utils.Constants
+import kotlin.time.ExperimentalTime
 
 @Serializable
 data class DetailsRoute(
@@ -126,28 +118,19 @@ fun DetailsScreenContent(
     onBack: () -> Unit,
     onClickLink: (() -> Unit)?
 ) {
-    var selectedTabIndex by remember { mutableStateOf(1) }
-    val urlString = item.getUrl() ?: error(Constants.URL_NULL_MESSAGE)
-    val webViewNavigator = rememberWebViewNavigator()
-    val combinedOnBack = {
-        if (selectedTabIndex == 1 && webViewNavigator.canGoBack) {
-            webViewNavigator.navigateBack()
-        }
-        else {
-            onBack()
-        }
-    }
-    BackHandler { combinedOnBack() }
+    val urlString = item.getUrl()
+    var selectedTabIndex by remember { mutableStateOf(if (urlString != null) 1 else 0) }
+    BackHandler { onBack() }
 
     Scaffold(
         topBar = {
             DetailsTopBar(
                 selectedTabIndex = selectedTabIndex,
-                trimmedHostName = Url(item.getUrl() ?: "").trimmedHostName(),
+                urlString = urlString,
                 commentCount = item.getCommentCount() ?: 0,
                 onTabSelected = { selectedTabIndex = it },
-                onBack = combinedOnBack,
-                onClickLink = onClickLink.takeIf { item.getUrl() != null }
+                onBack = onBack,
+                onClickLink = onClickLink.takeIf { urlString != null }
             )
         },
         snackbarHost = { SnackbarHost(snackBarHostState) }
@@ -166,14 +149,16 @@ fun DetailsScreenContent(
                 viewModel = viewModel,
             )
         }
-        FadeVisibilityKeepingState(
-            visible = selectedTabIndex == 1,
-        ) {
-            WebviewTabContent(
-                url = urlString,
-                modifier = Modifier
-                    .padding(padding)
-            )
+        if (urlString != null) {
+            FadeVisibilityKeepingState(
+                visible = selectedTabIndex == 1,
+            ) {
+                WebviewTabContent(
+                    url = urlString,
+                    modifier = Modifier
+                        .padding(padding)
+                )
+            }
         }
     }
 }
@@ -198,54 +183,57 @@ fun FadeVisibilityKeepingState(
     }
 }
 
-fun Modifier.passThroughPointerEvents(): Modifier = pointerInput(Unit) {
-    awaitPointerEventScope {
-        while (true) {
-            // Just await events without consuming them
-            awaitPointerEvent()
-        }
-    }
-}
+@OptIn(ExperimentalTime::class)
+fun String.toUrl(): Url? = runCatching { Url(this) }.getOrNull()
 
 @Composable
 fun DetailsTopBar(
     selectedTabIndex: Int,
-    trimmedHostName: String,
+    urlString: String?,
     commentCount: Int,
     onTabSelected: (Int) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     onClickLink: (() -> Unit)? = null
 ) {
+    val trimmedHostName = urlString?.toUrl()?.trimmedHostName()
+    val commentsLabel = "$commentCount comments"
     CenterAlignedTopAppBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
         title = {
-            PrimaryTabRow(
-                containerColor = Color.Transparent,
-                selectedTabIndex = selectedTabIndex,
-                divider = {},
-                indicator = {
-                    TabRowDefaults.PrimaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(selectedTabIndex, matchContentSize = true),
-                        width = Dp.Unspecified,
-                    )
-                },
-                tabs = {
-                    DetailsTab(
-                        selected = selectedTabIndex == 0,
-                        label = "$commentCount comments",
-                        onclick = { onTabSelected(0) },
-                        icon = painterResource(Res.drawable.ic_chat_line_linear)
-                    )
-                    DetailsTab(
-                        selected = selectedTabIndex == 1,
-                        label = trimmedHostName,
-                        onclick = { onTabSelected(1) },
-                        icon = painterResource(Res.drawable.ic_link_minimalistic_linear)
-                    )
-                }
-            )
+            if (urlString != null) {
+                PrimaryTabRow(
+                    containerColor = Color.Transparent,
+                    selectedTabIndex = selectedTabIndex,
+                    divider = {},
+                    indicator = {
+                        TabRowDefaults.PrimaryIndicator(
+                            modifier = Modifier.tabIndicatorOffset(selectedTabIndex, matchContentSize = true),
+                            width = Dp.Unspecified,
+                        )
+                    },
+                    tabs = {
+                        DetailsTab(
+                            selected = selectedTabIndex == 0,
+                            label = commentsLabel,
+                            onclick = { onTabSelected(0) },
+                            icon = painterResource(Res.drawable.ic_chat_line_linear)
+                        )
+                        if (trimmedHostName != null) {
+                            DetailsTab(
+                                selected = selectedTabIndex == 1,
+                                label = trimmedHostName,
+                                onclick = { onTabSelected(1) },
+                                icon = painterResource(Res.drawable.ic_link_minimalistic_linear)
+                            )
+                        }
+                    }
+                )
+            }
+            else {
+                Text(commentsLabel)
+            }
         },
         navigationIcon = {
             IconButton(onClick = onBack) {
@@ -257,7 +245,7 @@ fun DetailsTopBar(
             }
         },
         actions = {
-            if (onClickLink != null) {
+            if (urlString != null && onClickLink != null) {
                 IconButton(onClick = onClickLink) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_square_top_down_linear),
@@ -304,7 +292,7 @@ fun Preview_DetailsTopBar() {
     AppPreview {
         DetailsTopBar(
             selectedTabIndex = 0,
-            trimmedHostName = "example.com",
+            urlString = "https://www.example.com",
             commentCount = 10,
             onTabSelected = {},
             onBack = {},
