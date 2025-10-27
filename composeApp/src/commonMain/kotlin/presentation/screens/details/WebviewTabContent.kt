@@ -23,17 +23,16 @@ import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.WebViewState
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
+import extensions.isPdf
+import extensions.toUrl
 import getPlatform
-import io.ktor.http.Url
 import utils.Constants
 
-private fun getUrl(rawUrl: String): String {
-    val isPdf = Url(rawUrl).pathSegments.lastOrNull()
-        ?.endsWith(Constants.PDF_EXTENSION) ?: false
-    return if (isPdf && getPlatform().isAndroid()) {
-        Constants.URL_GOOGLE_DOCS + rawUrl
-    } else rawUrl
-}
+private fun getUrl(rawUrl: String): String =
+    when {
+        (getPlatform().isAndroid() && rawUrl.toUrl()?.isPdf() == true) -> Constants.URL_GOOGLE_DOCS + rawUrl
+        else -> rawUrl
+    }
 
 @Composable
 fun WebviewTabContent(

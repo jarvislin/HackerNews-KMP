@@ -41,8 +41,9 @@ sealed class Item {
             if (item.deleted || item.dead) return null
             return when (item.type) {
                 TYPE_STORY -> {
-                    if (item.url != null) json.decodeFromString<Story>(text)
-                    else json.decodeFromString<Ask>(text)
+                    json.decodeFromString<Story>(text)
+//TODO                    if (item.url != null) json.decodeFromString<Story>(text)
+//TODO: this was here, but why?                    else json.decodeFromString<Ask>(text)
                 }
 
                 TYPE_ASK -> json.decodeFromString<Ask>(text)

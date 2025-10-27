@@ -32,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -42,10 +41,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.multiplatform.webview.web.rememberWebViewNavigator
 import domain.models.Item
 import domain.models.getCommentCount
 import domain.models.getUrl
+import extensions.toUrl
 import extensions.trimmedHostName
 import getPlatform
 import domain.models.getUserName
@@ -122,7 +121,6 @@ fun DetailsScreenContent(
 ) {
     val urlString = item.getUrl()
     var selectedTabIndex by remember { mutableStateOf(if (urlString != null) 1 else 0) }
-    BackHandler { onBack() }
 
     Scaffold(
         topBar = {
@@ -184,9 +182,6 @@ fun FadeVisibilityKeepingState(
         content()
     }
 }
-
-@OptIn(ExperimentalTime::class)
-fun String.toUrl(): Url? = runCatching { Url(this) }.getOrNull()
 
 @Composable
 fun DetailsTopBar(

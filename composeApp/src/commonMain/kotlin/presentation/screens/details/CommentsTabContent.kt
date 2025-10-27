@@ -56,16 +56,19 @@ import domain.models.getPoint
 import domain.models.getText
 import domain.models.getTitle
 import domain.models.getUserName
+import domain.models.sampleCommentJson
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
 import hackernewskmp.composeapp.generated.resources.ic_like_outline
 import hackernewskmp.composeapp.generated.resources.ic_user_circle_linear
 import hackernewskmp.composeapp.generated.resources.no_comment
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import presentation.screens.main.ItemLoadingWidget
 import presentation.viewmodels.DetailsViewModel
+import ui.AppPreview
 import ui.trimmedTextStyle
 import utils.Constants
 import kotlin.time.Clock
@@ -283,37 +286,29 @@ private fun decodeUrl(url: String): String {
     }
 }
 
+@Preview
+@Composable
+private fun Preview_HtmlAnnotatedString() {
+    val annotated = remember(sampleHtmlAnnotatedComment) { htmlToAnnotatedString(sampleHtmlAnnotatedComment) }
+    AppPreview {
+        Text(
+            text = annotated,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
 @OptIn(ExperimentalTime::class)
 @Preview
 @Composable
-fun Preview_CommentWidget() {
-    val html = "<p>This is a sample comment text to demonstrate the styling.</p><p>This is another paragraph with <strong>bold</strong> and <em>italic</em> text.</p>"
-
-    val comment = Comment(
-        id = 1L,
-        userName = "john_doe",
-        text = html,
-        depth = 2,
-        time = (Clock.System.now() - 23.hours).epochSeconds,
-        commentIds = emptyList(),
-        parentId = 0L,
-    )
-
-    MaterialTheme {
-        Column(
-            verticalArrangement = spacedBy(24.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp)
-        ) {
-            CommentWidget(comment = comment)
-
-            val annotated = remember(html) { htmlToAnnotatedString(html) }
-            Text(
-                text = annotated,
-                style = MaterialTheme.typography.bodyMedium,
-            )
+private fun Preview_CommentWidget() {
+    AppPreview {
+        Column {
+            CommentWidget(comment = Item.from(Json, sampleCommentJson) as Comment)
         }
     }
 }
+
+private val sampleHtmlAnnotatedComment = """
+<p>This is a sample comment text to demonstrate the styling.</p><p>This is another paragraph with <strong>bold</strong> and <em>italic</em> text.</p>    
+""".trimIndent()

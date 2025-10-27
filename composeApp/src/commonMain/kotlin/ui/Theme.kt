@@ -12,7 +12,13 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import coil3.ColorImage
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.AsyncImagePreviewHandler
+import coil3.compose.LocalAsyncImagePreviewHandler
 import getPlatform
 
 val lightScheme = lightColorScheme(
@@ -91,14 +97,21 @@ val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun AppPreview(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable BoxScope.() -> Unit
 ) {
     val colorScheme = if (darkTheme) darkScheme else lightScheme
+    val previewHandler = AsyncImagePreviewHandler { request ->
+        request.placeholder() ?: ColorImage(Color.Gray.toArgb())
+    }
     MaterialTheme(colorScheme = colorScheme) {
-        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground,
+            LocalAsyncImagePreviewHandler provides previewHandler
+        ) {
             Box(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)

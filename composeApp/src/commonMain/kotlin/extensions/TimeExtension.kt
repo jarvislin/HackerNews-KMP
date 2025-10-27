@@ -21,6 +21,7 @@ object TimeExtension {
     fun LocalDateTime.format(): String {
         val dateTimeFormat = LocalDateTime.Format {
             byUnicodePattern(FORMAT)
+            //TODO: this better
         }
         return dateTimeFormat.format(this)
     }

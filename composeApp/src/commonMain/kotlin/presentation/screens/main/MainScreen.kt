@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,43 +48,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import domain.models.Category
 import domain.models.Item
-import domain.models.Story
-import domain.models.getCommentCount
-import domain.models.getFormattedDiffTimeShort
-import domain.models.getPoint
-import domain.models.getTitle
-import domain.models.getUrl
-import extensions.trimmedHostName
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.ic_alt_arrow_down_linear
-import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
-import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
-import hackernewskmp.composeapp.generated.resources.ic_like_outline
-import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
 import hackernewskmp.composeapp.generated.resources.ic_refresh_linear
 import hackernewskmp.composeapp.generated.resources.loading
 import hackernewskmp.composeapp.generated.resources.retry
-import io.ktor.http.Url
 import kotlinx.coroutines.flow.mapNotNull
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
-import ui.AppPreview
 import ui.trimmedTextStyle
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.ExperimentalTime
 
 @Composable
 fun MainScreen(onClickItem: (Item) -> Unit, onClickComment: (Item) -> Unit) {
@@ -245,98 +226,6 @@ fun PaginatedItemList(
 }
 
 @Composable
-fun ItemRowWidget(
-    item: Item,
-    onClickItem: () -> Unit,
-    onClickComment: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(modifier = modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-        Column(
-            verticalArrangement = spacedBy(8.dp),
-            modifier = Modifier
-                .weight(1f)
-                .clickable(onClick = onClickItem)
-                .padding(8.dp)
-        ) {
-            Text(
-                text = item.getTitle(),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = spacedBy(8.dp)
-            ) {
-                item.getUrl()?.let { urlString ->
-                    LabelledIcon(
-                        label = Url(urlString).trimmedHostName(),
-                        icon = painterResource(Res.drawable.ic_link_minimalistic_linear),
-                    )
-                }
-                LabelledIcon(
-                    label = item.getPoint().toString(),
-                    icon = painterResource(Res.drawable.ic_like_outline),
-                )
-                LabelledIcon(
-                    label = item.getFormattedDiffTimeShort(),
-                    icon = painterResource(Res.drawable.ic_clock_circle_linear),
-                )
-            }
-        }
-        item.getCommentCount()?.let { commentCount ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .clickable(onClick = onClickComment)
-                    .padding(top = 8.dp, bottom = 8.dp)
-                    .minimumInteractiveComponentSize()
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_chat_line_linear),
-                    contentDescription = null,
-                )
-                Text(
-                    text = "$commentCount",
-                    style = MaterialTheme.typography.labelLarge,
-                )
-
-            }
-        }
-
-    }
-}
-
-@Composable
-fun LabelledIcon(
-    label: String,
-    icon: Painter? = null,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = spacedBy(4.dp)
-    ) {
-        if (icon != null) {
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(16.dp),
-            )
-        }
-        Text(
-            text = label,
-            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-            style = trimmedTextStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@Composable
 fun ItemLoadingWidget() {
     Row(
         modifier = Modifier.fillMaxWidth()
@@ -353,31 +242,3 @@ fun ItemLoadingWidget() {
         )
     }
 }
-
-
-@OptIn(ExperimentalTime::class)
-@Preview
-@Composable
-fun Preview_ItemRowWidget() {
-    AppPreview(false) {
-        ItemRowWidget(
-            item = previewItems.first { it is Story },
-            onClickItem = {},
-            onClickComment = {}
-        )
-    }
-}
-
-@OptIn(ExperimentalTime::class)
-val previewItems: List<Item> = listOf(
-    Story(
-        id = 12345L,
-        title = "Sample Story Title",
-        url = "https://www.example.com",
-        userName = "sample_user",
-        time = (Clock.System.now() - 5.hours).epochSeconds,
-        score = 123,
-        countOfComment = 45,
-        commentIds = listOf(),
-    )
-)
