@@ -28,18 +28,12 @@ import extensions.toUrl
 import getPlatform
 import utils.Constants
 
-private fun getUrl(rawUrl: String): String =
-    when {
-        (getPlatform().isAndroid() && rawUrl.toUrl()?.isPdf() == true) -> Constants.URL_GOOGLE_DOCS + rawUrl
-        else -> rawUrl
-    }
-
 @Composable
 fun WebviewTabContent(
     url: String,
     modifier: Modifier = Modifier,
     webViewNavigator: WebViewNavigator = rememberWebViewNavigator(),
-    webViewState: WebViewState = rememberWebViewState(getUrl(url)),
+    webViewState: WebViewState = rememberWebViewState(wrapUrl(url)),
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -61,3 +55,13 @@ fun WebviewTabContent(
                 // this is a workaround to fix the issue with the WebView not being swipe-able on iOS
             })
 }
+
+/**
+ * Some URL's need to be wrapped to be viewable. For instance, to view a PDF,
+ * it can be wrapped to be viewed from google docs.
+ */
+private fun wrapUrl(rawUrl: String): String =
+    when {
+        (getPlatform().isAndroid() && rawUrl.toUrl()?.isPdf() == true) -> Constants.URL_GOOGLE_DOCS + rawUrl
+        else -> rawUrl
+    }

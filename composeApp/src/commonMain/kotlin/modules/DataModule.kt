@@ -33,6 +33,7 @@ val dataModule = module {
         Json {
             serializersModule = module
             ignoreUnknownKeys = true
+            classDiscriminator = "kind" // Because "type" is a named field in the HN api
         }
     }
     single {

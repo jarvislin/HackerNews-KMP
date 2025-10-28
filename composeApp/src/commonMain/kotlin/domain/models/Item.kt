@@ -89,7 +89,7 @@ fun Item.getFormattedDiffTimeShort(): String =
         in 0..60 -> "${diff}s"
         in 60..3600 -> "${diff / 60}m"
         in 3600..86400 -> "${diff / 3600}h"
-        else -> "${diff / 86400} d"
+        else -> "${diff / 86400}d"
     }
 
 @OptIn(ExperimentalTime::class)

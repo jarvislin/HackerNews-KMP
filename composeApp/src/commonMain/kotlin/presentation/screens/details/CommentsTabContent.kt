@@ -1,29 +1,24 @@
 package presentation.screens.details
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -36,10 +31,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -56,7 +47,7 @@ import domain.models.getPoint
 import domain.models.getText
 import domain.models.getTitle
 import domain.models.getUserName
-import domain.models.sampleCommentJson
+import domain.models.sampleCommentsJson
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
 import hackernewskmp.composeapp.generated.resources.ic_like_outline
@@ -68,22 +59,11 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import presentation.screens.main.ItemLoadingWidget
 import presentation.viewmodels.DetailsViewModel
+import presentation.widgets.IndentedBox
 import ui.AppPreview
 import ui.trimmedTextStyle
 import utils.Constants
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.ExperimentalTime
-
-@Composable
-private fun commentDepthColor(depth: Int): Color {
-    return when (depth % 4) {
-        0 -> MaterialTheme.colorScheme.primaryContainer
-        1 -> MaterialTheme.colorScheme.secondaryContainer
-        2 -> MaterialTheme.colorScheme.inversePrimary
-        else -> MaterialTheme.colorScheme.surfaceVariant
-    }
-}
 
 @Composable
 fun CommentsTabContent(
@@ -102,6 +82,15 @@ fun CommentsTabContent(
         viewModel.loadComments(item.getCommentIds())
     }
 
+    val localUriHandler = LocalUriHandler.current
+    val uriHandler by remember {
+        mutableStateOf(object : UriHandler {
+            override fun openUri(uri: String) {
+                localUriHandler.openUri(decodeUrl(uri))
+            }
+        })
+    }
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         state = listState,
@@ -110,7 +99,9 @@ fun CommentsTabContent(
     ) {
         item { ContentWidget(item, state.pollOptions) }
         itemsIndexed(items = state.comments, key = { _, comment -> comment.id }) { _, comment ->
-            CommentWidget(comment)
+            CompositionLocalProvider(LocalUriHandler provides uriHandler) {
+                CommentWidget(comment)
+            }
         }
         if (state.comments.size < item.getCommentIds().size) item { ItemLoadingWidget() }
     }
@@ -212,63 +203,45 @@ fun PollOptionWidget(option: PollOption, size: Int, index: Int) {
     }
 }
 
+
 @Composable
 fun CommentWidget(
     comment: Comment,
+    depth: Int = comment.depth,
     modifier: Modifier = Modifier,
 ) {
-    val paddingStart = 12.dp * (comment.depth + 1)
-    val localUriHandler = LocalUriHandler.current
     val html = comment.getText() ?: stringResource(Res.string.no_comment)
+    val username = comment.getUserName()
+    val since = comment.getFormattedDiffTimeShort()
     val annotated = remember(html) { htmlToAnnotatedString(html) }
-    val color = commentDepthColor(comment.depth)
 
-    val uriHandler by remember {
-        mutableStateOf(object : UriHandler {
-            override fun openUri(uri: String) {
-                localUriHandler.openUri(decodeUrl(uri))
-            }
-        })
-    }
-    Column(
-        modifier = modifier
-            .padding(horizontal = 16.dp)
-            .padding(start = (paddingStart - 12.dp), top = 12.dp)
-            .drawWithContent {
-                drawLine(
-                    color = color,
-                    start = Offset.Zero,
-                    end = Offset(0f, size.height),
-                    strokeWidth = 2.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
-                drawContent()
-            }
-            .padding(start = 12.dp),
+    IndentedBox(
+        modifier = modifier,
+        depth = depth
     ) {
-        CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-            LocalTextStyle provides MaterialTheme.typography.bodySmall
-        ) {
-            Row(
-                horizontalArrangement = spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+        Column {
+            CompositionLocalProvider(
+                LocalContentColor provides MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                LocalTextStyle provides MaterialTheme.typography.bodySmall
             ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_user_circle_linear),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                )
-                Text(
-                    text = comment.getUserName(),
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = comment.getFormattedDiffTimeShort(),
-                )
+                Row(
+                    horizontalArrangement = spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_user_circle_linear),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Text(
+                        text = username,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = since,
+                    )
+                }
             }
-        }
-        CompositionLocalProvider(LocalUriHandler provides uriHandler) {
             Text(
                 modifier = Modifier.padding(top = 12.dp),
                 text = annotated,
@@ -304,7 +277,9 @@ private fun Preview_HtmlAnnotatedString() {
 private fun Preview_CommentWidget() {
     AppPreview {
         Column {
-            CommentWidget(comment = Item.from(Json, sampleCommentJson) as Comment)
+            sampleCommentsJson
+                .mapNotNull { Item.from(Json, it) }
+                .forEach { CommentWidget(comment = it as Comment) }
         }
     }
 }
