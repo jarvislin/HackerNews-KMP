@@ -53,8 +53,9 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.compose.webview.multiplatform)
             implementation(libs.htmlconverter)
-            implementation("io.coil-kt.coil3:coil-compose:3.3.0")
-            implementation("io.coil-kt.coil3:coil-network-ktor3:3.3.0")
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
+            implementation(libs.squircle.shape)
         }
     }
 }

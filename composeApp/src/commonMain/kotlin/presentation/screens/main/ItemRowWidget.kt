@@ -30,6 +30,7 @@ import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
 import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
 import hackernewskmp.composeapp.generated.resources.ic_like_outline
+import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
 import io.ktor.http.Url
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
@@ -68,7 +69,7 @@ fun ItemRowWidget(
                     LabelledIcon(
                         label = url.trimmedHostName(),
                         url = url.faviconUrl(),
-                        placeholder = painterResource(Res.drawable.ic_chat_line_linear)
+                        placeholder = painterResource(Res.drawable.ic_link_minimalistic_linear),
                     )
                 }
                 LabelledIcon(

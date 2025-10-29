@@ -56,6 +56,7 @@ fun LabelledIcon(
 fun LabelledIcon(
     label: String,
     placeholder: Painter? = null,
+    fallback: Painter? = placeholder,
     url: String? = null,
     modifier: Modifier = Modifier
 ) {
@@ -69,6 +70,8 @@ fun LabelledIcon(
                 model = url,
                 contentDescription = null,
                 placeholder = placeholder,
+                fallback = fallback,
+                error = fallback,
                 modifier = Modifier
                     .size(16.dp),
             )

@@ -21,11 +21,9 @@ data class Comment(
     val text: String,
     @SerialName("time")
     val time: Long,
-    val depth: Int = 0,
     @SerialName("type")
     val type: String,
 ) : Item()
-
 
 val sampleCommentsJson = listOf(
     """

@@ -13,14 +13,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
-import domain.models.Comment
-import domain.models.Item
-import domain.models.sampleCommentsJson
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import presentation.screens.details.CommentWidget
 import ui.AppPreview
-import kotlin.time.ExperimentalTime
 
 @Composable
 private fun commentDepthColor(depth: Int): Color {
@@ -43,7 +37,7 @@ fun IndentedBox(
     Box(
         modifier = modifier
             .padding(horizontal = 16.dp)
-            .padding(start = (paddingStart - 12.dp), top = 12.dp)
+            .padding(start = (paddingStart - 12.dp), top = 6.dp, bottom = 6.dp)
             .drawWithContent {
                 drawLine(
                     color = color,

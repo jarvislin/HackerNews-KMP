@@ -57,7 +57,6 @@ import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
 import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
 import hackernewskmp.composeapp.generated.resources.retry
 import hackernewskmp.composeapp.generated.resources.x_comments
-import io.ktor.http.Url
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
@@ -85,17 +84,18 @@ fun DetailsScreen(
     itemId: Long,
     onBack: () -> Unit,
 ) {
-    val viewModel = koinInject<DetailsViewModel>()
+    val detailsViewModel = koinInject<DetailsViewModel>()
     val mainViewModel = koinInject<MainViewModel>()
     val uriHandler = LocalUriHandler.current
-    val state by viewModel.state
+    val state by detailsViewModel.state
     val snackBarHostState = remember { SnackbarHostState() }
     val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
     val onClickLink = item.getUrl()?.let {
         { uriHandler.openUri(it) }
     }
 
-    DetailsScreenContent(snackBarHostState, viewModel, item, onBack, onClickLink)
+    DetailsScreenContent(snackBarHostState, detailsViewModel, item, onBack, onClickLink)
+
 
     LaunchedEffect(Unit) {
         if (state.error != null) {
@@ -104,7 +104,7 @@ fun DetailsScreen(
                 actionLabel = getString(Res.string.retry)
             )
             if (result == SnackbarResult.ActionPerformed) {
-                viewModel.reset()
+                detailsViewModel.reset()
             }
         }
     }

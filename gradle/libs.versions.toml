@@ -3,8 +3,14 @@ agp = "8.13.0"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "34"
-androidx-activityCompose = "1.11.0"
 compose-plugin = "1.9.1"
+
+kotlin = "2.2.21"
+
+androidx-activityCompose = "1.11.0"
+
+# https://github.com/coil-kt/coil/releases
+coil = "3.3.0"
 
 # https://github.com/KevinnZou/compose-webview-multiplatform/releases
 compose-webview-multiplatform = "2.0.3"
@@ -14,8 +20,6 @@ htmlconverter = "1.1.0"
 
 # https://insert-koin.io/docs/setup/koin/
 koin = "4.1.1"
-
-kotlin = "2.2.20"
 
 # https://github.com/Kotlin/kotlinx.serialization/releases
 kotlinx-serialization-json = "1.9.0"
@@ -32,7 +36,12 @@ napier = "2.7.1"
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-navigation-routing.html
 navigation-compose = "2.9.1"
 
+# https://github.com/stoyan-vuchev/squircle-shape/releases
+squircleShape = "4.0.0"
+
 [libraries]
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 compose-webview-multiplatform = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "compose-webview-multiplatform" }
 htmlconverter = { module = "be.digitalia.compose.htmlconverter:htmlconverter", version.ref = "htmlconverter" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
@@ -45,6 +54,7 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+squircle-shape = { module = "com.stoyanvuchev:squircle-shape", version.ref = "squircleShape" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
