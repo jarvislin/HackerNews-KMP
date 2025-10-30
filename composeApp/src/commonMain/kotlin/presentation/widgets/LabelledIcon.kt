@@ -1,13 +1,19 @@
 package presentation.widgets
 
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -15,6 +21,7 @@ import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
 import org.jetbrains.compose.resources.painterResource
@@ -56,7 +63,6 @@ fun LabelledIcon(
 fun LabelledIcon(
     label: String,
     placeholder: Painter? = null,
-    fallback: Painter? = placeholder,
     url: String? = null,
     modifier: Modifier = Modifier
 ) {
@@ -66,15 +72,30 @@ fun LabelledIcon(
         horizontalArrangement = spacedBy(4.dp)
     ) {
         if (url != null) {
-            AsyncImage(
-                model = url,
-                contentDescription = null,
-                placeholder = placeholder,
-                fallback = fallback,
-                error = fallback,
+            Box(
                 modifier = Modifier
-                    .size(16.dp),
-            )
+                    .size(16.dp)
+            ) {
+                var showPlaceholder by remember { mutableStateOf(true) }
+                if (placeholder != null && showPlaceholder) {
+                    Icon(
+                        painter = placeholder,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                AsyncImage(
+                    model = url,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    onState = { state ->
+                        showPlaceholder = when (state) {
+                            is AsyncImagePainter.State.Success -> false
+                            else -> true
+                        }
+                    }
+                )
+            }
         }
         Text(
             text = label,
