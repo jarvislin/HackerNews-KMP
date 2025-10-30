@@ -3,14 +3,40 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import kotlinx.cinterop.ExperimentalForeignApi
+import okio.Path.Companion.toPath
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
 import platform.UIKit.UIDevice
 import ui.baseline
 import ui.darkScheme
 import ui.lightScheme
+import utils.Constants.DATASTORE_FILE_NAME
 
 @ExperimentalComposeUiApi
 class IOSPlatform : Platform {
     override val name: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
+
+    @OptIn(ExperimentalForeignApi::class)
+    override fun createDataStore(): DataStore<Preferences> =
+        PreferenceDataStoreFactory.createWithPath(
+            produceFile = {
+                val documentDirectory: NSURL? = NSFileManager.defaultManager.URLForDirectory(
+                    directory = NSDocumentDirectory,
+                    inDomain = NSUserDomainMask,
+                    appropriateForURL = null,
+                    create = false,
+                    error = null,
+                )
+                val path = requireNotNull(documentDirectory).path + "/$DATASTORE_FILE_NAME"
+                path.toPath()
+            }
+        )
 
     @Composable
     override fun getScreenWidth(): Float =

@@ -4,7 +4,6 @@ package presentation.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -47,9 +46,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import domain.models.Category
@@ -66,7 +63,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
-import ui.trimmedTextStyle
 
 @Composable
 fun MainScreen(onClickItem: (Item) -> Unit, onClickComment: (Item) -> Unit) {
@@ -184,7 +180,7 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
 fun PaginatedItemList(
     onClickItem: (Item) -> Unit,
     onClickComment: (Item) -> Unit,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues.Zero,
     viewModel: MainViewModel = koinInject()
 ) {
     val listState = rememberLazyListState()
@@ -214,7 +210,18 @@ fun PaginatedItemList(
             contentPadding = contentPadding
         ) {
             itemsIndexed(items = state.items, key = { index, item -> item.getItemId() }) { index, item ->
-                ItemRowWidget(item, { onClickItem(item) }, { onClickComment(item) })
+                ItemRowWidget(
+                    item = item,
+                    seen = state.seenItemsIds.contains(item.getItemId().toString()),
+                    onClickItem = {
+                        viewModel.markItemAsSeen(item)
+                        onClickItem(item)
+                    },
+                    onClickComment = {
+                        viewModel.markItemAsSeen(item)
+                        onClickComment(item)
+                    },
+                )
             }
 
             if (state.items.isNotEmpty() && state.currentPage * MainViewModel.PAGE_SIZE < state.itemIds.size) {

@@ -27,9 +27,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
     ) {
         composable(RouteScreen.Main.name) {
             MainScreen(
-                onClickItem = {
-                    navController.navigate(DetailsRoute(it.getItemId()))
-                },
+                onClickItem = { navController.navigate(DetailsRoute(it.getItemId())) },
                 onClickComment = { navController.navigate(DetailsRoute(it.getItemId())) }
             )
         }

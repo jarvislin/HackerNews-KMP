@@ -1,5 +1,6 @@
 package modules
 
+import data.local.AppPreferences
 import data.remote.ApiHandler
 import domain.models.Ask
 import domain.models.Comment
@@ -8,6 +9,7 @@ import domain.models.Job
 import domain.models.Poll
 import domain.models.PollOption
 import domain.models.Story
+import getPlatform
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -48,4 +50,8 @@ val dataModule = module {
         }.also { Napier.base(DebugAntilog()) }
     }
     single { ApiHandler }
+    
+    single { getPlatform().createDataStore() }
+
+    single { AppPreferences(get()) }
 }

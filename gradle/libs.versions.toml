@@ -15,6 +15,9 @@ coil = "3.3.0"
 # https://github.com/KevinnZou/compose-webview-multiplatform/releases
 compose-webview-multiplatform = "2.0.3"
 
+# https://developer.android.com/kotlin/multiplatform/datastore
+datastore = "1.1.7"
+
 # https://github.com/cbeyls/HtmlConverterCompose/releases
 htmlconverter = "1.1.0"
 
@@ -40,6 +43,8 @@ navigation-compose = "2.9.1"
 squircleShape = "4.0.0"
 
 [libraries]
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 compose-webview-multiplatform = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "compose-webview-multiplatform" }

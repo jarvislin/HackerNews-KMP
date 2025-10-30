@@ -12,6 +12,7 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import domain.models.Item
@@ -43,11 +44,16 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun ItemRowWidget(
     item: Item,
+    seen: Boolean,
     onClickItem: () -> Unit,
     onClickComment: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+    Row(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .alpha(if (seen) 0.4f else 1f)
+    ) {
         Column(
             verticalArrangement = spacedBy(8.dp),
             modifier = Modifier
@@ -104,15 +110,26 @@ fun ItemRowWidget(
     }
 }
 
-@OptIn(ExperimentalTime::class)
 @Preview
 @Composable
-fun Preview_ItemRowWidget() {
-    AppPreview(false) {
+private fun Preview_ItemRowWidget_Dark() {
+    Preview_ItemRowWidget(darkTheme = true)
+}
+
+@Preview
+@Composable
+private fun Preview_ItemRowWidget_Light() {
+    Preview_ItemRowWidget(darkTheme = false)
+}
+
+@Composable
+private fun Preview_ItemRowWidget(darkTheme: Boolean) {
+    AppPreview(darkTheme = darkTheme) {
         Column {
-            previewItems.forEach {
+            previewItems.forEachIndexed { index, item ->
                 ItemRowWidget(
-                    item = it,
+                    item = item,
+                    seen = index % 2 == 0,
                     onClickItem = {},
                     onClickComment = {},
                 )
