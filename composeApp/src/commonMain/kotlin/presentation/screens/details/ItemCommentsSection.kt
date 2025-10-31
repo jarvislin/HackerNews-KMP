@@ -39,6 +39,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import presentation.widgets.IndentedBox
+import presentation.widgets.SquircleBadge
 import sv.lib.squircleshape.SquircleShape
 import ui.AppPreview
 import kotlin.time.ExperimentalTime
@@ -120,14 +121,12 @@ fun CommentRow(
                         text = since,
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "+$descendantsCount",
+                    SquircleBadge(
                         modifier = Modifier
                             .alpha(if (descendantsCount != null) 1f else 0f)
-                            .background(MaterialTheme.colorScheme.primaryContainer, SquircleShape(8.dp))
-                            .padding(4.dp),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    ) {
+                        Text("+$descendantsCount")
+                    }
                 }
             }
             Text(

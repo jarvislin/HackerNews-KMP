@@ -1,29 +1,16 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package presentation.screens.details
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,39 +20,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import domain.models.Item
 import domain.models.getCommentCount
 import domain.models.getUrl
-import extensions.toUrl
-import extensions.trimmedHostName
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
-import hackernewskmp.composeapp.generated.resources.back
-import hackernewskmp.composeapp.generated.resources.ic_arrow_left_linear
-import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
-import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
-import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
 import hackernewskmp.composeapp.generated.resources.retry
-import hackernewskmp.composeapp.generated.resources.x_comments
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.pluralStringResource
-import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import presentation.viewmodels.DetailsViewModel
 import presentation.viewmodels.MainViewModel
-import ui.AppPreview
 
 @Serializable
 data class DetailsRoute(
@@ -174,121 +144,5 @@ fun FadeVisibilityKeepingState(
             .zIndex(if (alpha < 0.5f) -1f else 0f)
     ) {
         content()
-    }
-}
-
-@Composable
-fun DetailsTopBar(
-    selectedTabIndex: Int,
-    urlString: String?,
-    commentCount: Int,
-    onTabSelected: (Int) -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    onClickLink: (() -> Unit)? = null
-) {
-    val trimmedHostName = urlString?.toUrl()?.trimmedHostName()
-    val commentsLabel = pluralStringResource(Res.plurals.x_comments, commentCount, commentCount)
-    CenterAlignedTopAppBar(
-        modifier = modifier,
-        colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
-        title = {
-            if (urlString != null) {
-                PrimaryTabRow(
-                    containerColor = Color.Transparent,
-                    selectedTabIndex = selectedTabIndex,
-                    divider = {},
-                    indicator = {
-                        TabRowDefaults.PrimaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(selectedTabIndex, matchContentSize = true),
-                            width = Dp.Unspecified,
-                        )
-                    },
-                    tabs = {
-                        DetailsTab(
-                            selected = selectedTabIndex == 0,
-                            label = commentsLabel,
-                            onclick = { onTabSelected(0) },
-                            icon = painterResource(Res.drawable.ic_chat_line_linear)
-                        )
-                        if (trimmedHostName != null) {
-                            DetailsTab(
-                                selected = selectedTabIndex == 1,
-                                label = trimmedHostName,
-                                onclick = { onTabSelected(1) },
-                                icon = painterResource(Res.drawable.ic_link_minimalistic_linear)
-                            )
-                        }
-                    }
-                )
-            }
-            else {
-                Text(commentsLabel)
-            }
-        },
-        navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_arrow_left_linear),
-                    contentDescription = stringResource(Res.string.back),
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        },
-        actions = {
-            if (urlString != null && onClickLink != null) {
-                IconButton(onClick = onClickLink) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_square_top_down_linear),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-    )
-}
-
-@Composable
-private fun DetailsTab(
-    selected: Boolean,
-    label: String,
-    onclick: () -> Unit,
-    icon: Painter,
-    modifier: Modifier = Modifier,
-) {
-    Tab(
-        modifier = modifier,
-        selected = selected,
-        onClick = onclick,
-        icon = {
-            Icon(
-                painter = icon,
-                contentDescription = null,
-            )
-        },
-        text = {
-            Text(
-                text = label,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    )
-}
-
-@Preview(widthDp = 432)
-@Composable
-fun Preview_DetailsTopBar() {
-    AppPreview {
-        DetailsTopBar(
-            selectedTabIndex = 0,
-            urlString = "https://www.example.com",
-            commentCount = 10,
-            onTabSelected = {},
-            onBack = {},
-            onClickLink = {},
-            modifier = Modifier.border(1.dp, Color.Black)
-        )
     }
 }
