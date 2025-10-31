@@ -23,7 +23,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
         startDestination = RouteScreen.Main.name,
-        modifier = Modifier.fillMaxSize().statusBarsPadding()
+        modifier = Modifier.fillMaxSize()
     ) {
         composable(RouteScreen.Main.name) {
             MainScreen(

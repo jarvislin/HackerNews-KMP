@@ -46,8 +46,6 @@ import domain.models.getCommentCount
 import domain.models.getUrl
 import extensions.toUrl
 import extensions.trimmedHostName
-import getPlatform
-import domain.models.getUserName
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.back
@@ -67,11 +65,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import presentation.viewmodels.DetailsViewModel
 import presentation.viewmodels.MainViewModel
-import presentation.widgets.PlatformSwipeContainer
 import ui.AppPreview
-import ui.trimmedTextStyle
-import utils.Constants
-import kotlin.time.ExperimentalTime
 
 @Serializable
 data class DetailsRoute(
