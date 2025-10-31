@@ -117,15 +117,6 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
     TopAppBar(
         expandedHeight = 64.dp,
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
-        actions = {
-            IconButton(onClick = {  }) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_refresh_linear),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        },
         title = {
             Row(
                 modifier = Modifier
