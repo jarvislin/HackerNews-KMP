@@ -1,4 +1,3 @@
-import android.app.Application
 import android.content.Context
 import android.os.Build
 import androidx.compose.material3.ColorScheme
