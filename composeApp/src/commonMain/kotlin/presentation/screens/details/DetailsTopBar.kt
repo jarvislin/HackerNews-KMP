@@ -12,7 +12,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -36,16 +36,13 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import presentation.widgets.SquircleBadge
 import ui.AppPreview
 
-private const val INDEX_COMMENTS = 0
-private const val INDEX_WEB = 1
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailsTopBar(
-    selectedTabIndex: Int,
+    selectedTab: DetailsScreenTab,
     urlString: String?,
     commentCount: Int,
-    onTabSelected: (Int) -> Unit,
+    onTabSelected: (DetailsScreenTab) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     onClickLink: (() -> Unit)? = null
@@ -56,7 +53,7 @@ fun DetailsTopBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors().run { copy(containerColor = containerColor.copy(alpha = 0.9f)) },
         title = {
-            if (selectedTabIndex == INDEX_COMMENTS || trimmedHostName == null) {
+            if (selectedTab == DetailsScreenTab.Comments || trimmedHostName == null) {
                 Text(commentsLabel)
             }
             else {
@@ -80,8 +77,8 @@ fun DetailsTopBar(
             }
         },
         actions = {
-            if (selectedTabIndex == INDEX_COMMENTS && trimmedHostName != null) {
-                IconButton(onClick = {onTabSelected(INDEX_WEB)}) {
+            if (selectedTab == DetailsScreenTab.Comments && trimmedHostName != null) {
+                IconButton(onClick = {onTabSelected(DetailsScreenTab.Webview)}) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_global_outline),
                         contentDescription = null,
@@ -89,7 +86,7 @@ fun DetailsTopBar(
                     )
                 }
             }
-            if (selectedTabIndex == INDEX_WEB) {
+            if (selectedTab == DetailsScreenTab.Webview) {
                 BadgedBox(
                     badge = {
                         if (commentCount > 0) {
@@ -107,7 +104,7 @@ fun DetailsTopBar(
                         }
                     }
                 ) {
-                    IconButton(onClick = {onTabSelected(INDEX_COMMENTS)}) {
+                    IconButton(onClick = {onTabSelected(DetailsScreenTab.Comments)}) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_chat_line_linear),
                             contentDescription = null,
@@ -132,33 +129,33 @@ fun DetailsTopBar(
 @Preview(widthDp = 432)
 @Composable
 private fun Preview_DetailsTopBar_Comments() {
-    Preview_DetailsTopBar(INDEX_COMMENTS)
+    Preview_DetailsTopBar(DetailsScreenTab.Comments)
 }
 
 @Preview(widthDp = 432)
 @Composable
 private fun Preview_DetailsTopBar_Web() {
-    Preview_DetailsTopBar(INDEX_WEB)
+    Preview_DetailsTopBar(DetailsScreenTab.Webview)
 }
 
 @Preview(widthDp = 432)
 @Composable
 private fun Preview_DetailsTopBar_LongName() {
     Preview_DetailsTopBar(
-        initialTab = INDEX_WEB,
+        initialTab = DetailsScreenTab.Webview,
         urlString = "http://rfd.shared.oxide.computer.longname.com"
     )
 }
 
 @Composable
 private fun Preview_DetailsTopBar(
-    initialTab: Int,
+    initialTab: DetailsScreenTab,
     urlString: String = "https://www.example.com"
 ) {
-    var selectedTab by remember { mutableIntStateOf(initialTab) }
+    var selectedTab by remember { mutableStateOf(initialTab) }
     AppPreview {
         DetailsTopBar(
-            selectedTabIndex = selectedTab,
+            selectedTab = selectedTab,
             urlString = urlString,
             commentCount = 10,
             onTabSelected = {selectedTab = it},

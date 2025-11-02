@@ -58,14 +58,21 @@ import hackernewskmp.composeapp.generated.resources.ic_refresh_linear
 import hackernewskmp.composeapp.generated.resources.loading
 import hackernewskmp.composeapp.generated.resources.retry
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
 
+@Serializable
+object MainRoute
+
 @Composable
-fun MainScreen(onClickItem: (Item) -> Unit, onClickComment: (Item) -> Unit) {
+fun MainScreen(
+    onClickItem: (Item) -> Unit,
+    onClickComment: (Item) -> Unit
+) {
     val viewModel = koinInject<MainViewModel>()
     val state by viewModel.state
     val snackBarHostState = remember { SnackbarHostState() }

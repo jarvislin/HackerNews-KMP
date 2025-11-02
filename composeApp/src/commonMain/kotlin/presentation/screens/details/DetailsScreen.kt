@@ -40,12 +40,19 @@ import presentation.viewmodels.MainViewModel
 @Serializable
 data class DetailsRoute(
     @SerialName("id")
-    val id: Long
+    val id: Long,
+    @SerialName("tab")
+    val tab: DetailsScreenTab
 )
+
+enum class DetailsScreenTab {
+    Webview, Comments
+}
 
 @Composable
 fun DetailsScreen(
     itemId: Long,
+    tab: DetailsScreenTab,
     onBack: () -> Unit,
 ) {
     val detailsViewModel = koinInject<DetailsViewModel>()
@@ -58,8 +65,14 @@ fun DetailsScreen(
         { uriHandler.openUri(it) }
     }
 
-    DetailsScreenContent(snackBarHostState, detailsViewModel, item, onBack, onClickLink)
-
+    DetailsScreenContent(
+        snackBarHostState = snackBarHostState,
+        viewModel = detailsViewModel,
+        item = item,
+        tab = tab,
+        onBack = onBack,
+        onClickLink = onClickLink
+    )
 
     LaunchedEffect(Unit) {
         if (state.error != null) {
@@ -80,19 +93,20 @@ fun DetailsScreenContent(
     snackBarHostState: SnackbarHostState,
     viewModel: DetailsViewModel,
     item: Item,
+    tab: DetailsScreenTab,
     onBack: () -> Unit,
     onClickLink: (() -> Unit)?
 ) {
     val urlString = item.getUrl()
-    var selectedTabIndex by remember { mutableStateOf(if (urlString != null) 1 else 0) }
+    var selectedTab by remember(tab, urlString) { mutableStateOf(if (urlString == null) DetailsScreenTab.Comments else tab) }
 
     Scaffold(
         topBar = {
             DetailsTopBar(
-                selectedTabIndex = selectedTabIndex,
+                selectedTab = selectedTab,
                 urlString = urlString,
                 commentCount = item.getCommentCount() ?: 0,
-                onTabSelected = { selectedTabIndex = it },
+                onTabSelected = { selectedTab = it },
                 onBack = onBack,
                 onClickLink = onClickLink.takeIf { urlString != null }
             )
@@ -100,7 +114,7 @@ fun DetailsScreenContent(
         snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { padding ->
         FadeVisibilityKeepingState(
-            visible = selectedTabIndex == 0,
+            visible = selectedTab == DetailsScreenTab.Comments,
         ) {
             CommentsTabContent(
                 item = item,
@@ -115,7 +129,7 @@ fun DetailsScreenContent(
         }
         if (urlString != null) {
             FadeVisibilityKeepingState(
-                visible = selectedTabIndex == 1,
+                visible = selectedTab == DetailsScreenTab.Webview,
             ) {
                 WebviewTabContent(
                     url = urlString,

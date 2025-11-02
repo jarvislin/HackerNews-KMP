@@ -1,7 +1,6 @@
 package presentation
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -11,30 +10,29 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import presentation.screens.details.DetailsRoute
 import presentation.screens.details.DetailsScreen
+import presentation.screens.details.DetailsScreenTab
+import presentation.screens.main.MainRoute
 import presentation.screens.main.MainScreen
-
-enum class RouteScreen {
-    Main,
-    Details,
-}
 
 @Composable
 fun RootScreen(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
-        startDestination = RouteScreen.Main.name,
+        startDestination = MainRoute,
         modifier = Modifier.fillMaxSize()
     ) {
-        composable(RouteScreen.Main.name) {
+        composable<MainRoute> {
             MainScreen(
-                onClickItem = { navController.navigate(DetailsRoute(it.getItemId())) },
-                onClickComment = { navController.navigate(DetailsRoute(it.getItemId())) }
+                onClickItem = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Webview)) },
+                onClickComment = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Comments)) }
             )
         }
 
         composable<DetailsRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<DetailsRoute>()
             DetailsScreen(
-                itemId = backStackEntry.toRoute<DetailsRoute>().id,
+                itemId = route.id,
+                tab = route.tab,
                 onBack = { navController.popBackStack() },
             )
         }
