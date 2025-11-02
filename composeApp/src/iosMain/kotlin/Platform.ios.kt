@@ -8,7 +8,11 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import com.multiplatform.webview.request.RequestInterceptor
+import com.multiplatform.webview.request.WebRequest
+import com.multiplatform.webview.request.WebRequestInterceptResult
 import com.multiplatform.webview.setting.PlatformWebSettings
+import com.multiplatform.webview.web.WebViewNavigator
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path.Companion.toPath
 import platform.Foundation.NSDocumentDirectory
@@ -40,6 +44,8 @@ class IOSPlatform : Platform {
                 path.toPath()
             }
         )
+
+    override fun webRequestInterceptor(): RequestInterceptor? = null
 
     @Composable
     override fun getScreenWidth(): Float =

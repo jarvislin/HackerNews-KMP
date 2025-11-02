@@ -26,7 +26,9 @@ fun WebviewTabContent(
     url: String,
     modifier: Modifier = Modifier,
     defaultBackgroundColor: Color = MaterialTheme.colorScheme.background,
-    webViewNavigator: WebViewNavigator = rememberWebViewNavigator(),
+    webViewNavigator: WebViewNavigator = rememberWebViewNavigator(
+        requestInterceptor = getPlatform().webRequestInterceptor()
+    ),
     webViewState: WebViewState = rememberWebViewState(
         url = wrapUrl(url),
         extraSettings = {

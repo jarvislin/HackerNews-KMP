@@ -3,6 +3,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.multiplatform.webview.request.RequestInterceptor
 
 interface Platform {
     val name: String
@@ -11,6 +12,8 @@ interface Platform {
      *   Gets the singleton DataStore instance, creating it if necessary.
      */
     fun createDataStore(): DataStore<Preferences>
+
+    fun webRequestInterceptor(): RequestInterceptor?
 
     @Composable
     fun getScreenWidth(): Float

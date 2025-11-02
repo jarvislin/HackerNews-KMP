@@ -1,4 +1,5 @@
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Typography
@@ -13,6 +14,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import com.jarvislin.hackernews.HnKmp
+import com.multiplatform.webview.request.RequestInterceptor
+import com.multiplatform.webview.request.WebRequest
+import com.multiplatform.webview.request.WebRequestInterceptResult
+import com.multiplatform.webview.web.WebViewNavigator
 import okio.Path.Companion.toPath
 import ui.appTypography
 import ui.darkScheme
@@ -26,6 +31,25 @@ class AndroidPlatform(private val context: Context) : Platform {
         PreferenceDataStoreFactory.createWithPath(
             produceFile = { context.filesDir.resolve(DATASTORE_FILE_NAME).absolutePath.toPath() }
         )
+
+    override fun webRequestInterceptor(): RequestInterceptor =
+        object: RequestInterceptor {
+            override fun onInterceptUrlRequest(
+                request: WebRequest,
+                navigator: WebViewNavigator
+            ): WebRequestInterceptResult {
+                if (request.url.startsWith("intent://")) {
+                    try {
+                        val intent = Intent.parseUri(request.url, Intent.URI_INTENT_SCHEME)
+                        context.startActivity(intent)
+                        return WebRequestInterceptResult.Reject
+                    } catch (e: Exception) {
+                        // Handle fallback
+                    }
+                }
+                return WebRequestInterceptResult.Allow
+            }
+        }
 
     @Composable
     override fun getScreenWidth(): Float =
