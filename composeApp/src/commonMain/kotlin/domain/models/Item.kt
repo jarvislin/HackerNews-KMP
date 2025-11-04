@@ -30,7 +30,6 @@ sealed class Item {
 
     companion object {
         private const val TYPE_STORY = "story"
-        private const val TYPE_ASK = "ask"
         private const val TYPE_COMMENT = "comment"
         private const val TYPE_JOB = "job"
         private const val TYPE_POLL = "poll"
@@ -41,12 +40,10 @@ sealed class Item {
             if (item.deleted || item.dead) return null
             return when (item.type) {
                 TYPE_STORY -> {
-                    json.decodeFromString<Story>(text)
-//TODO                    if (item.url != null) json.decodeFromString<Story>(text)
-//TODO: this was here, but why?                    else json.decodeFromString<Ask>(text)
+                    // An "Ask" is by convention a story with no URL
+                    if (item.url != null) json.decodeFromString<Story>(text)
+                    else json.decodeFromString<Ask>(text)
                 }
-
-                TYPE_ASK -> json.decodeFromString<Ask>(text)
                 TYPE_COMMENT -> json.decodeFromString<Comment>(text)
                 TYPE_JOB -> json.decodeFromString<Job>(text)
                 TYPE_POLL -> json.decodeFromString<Poll>(text)
