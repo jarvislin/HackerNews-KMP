@@ -30,7 +30,6 @@ sealed class Item {
 
     companion object {
         private const val TYPE_STORY = "story"
-        private const val TYPE_ASK = "ask"
         private const val TYPE_COMMENT = "comment"
         private const val TYPE_JOB = "job"
         private const val TYPE_POLL = "poll"
@@ -41,11 +40,10 @@ sealed class Item {
             if (item.deleted || item.dead) return null
             return when (item.type) {
                 TYPE_STORY -> {
+                    // An "Ask" is by convention a story with no URL
                     if (item.url != null) json.decodeFromString<Story>(text)
                     else json.decodeFromString<Ask>(text)
                 }
-
-                TYPE_ASK -> json.decodeFromString<Ask>(text)
                 TYPE_COMMENT -> json.decodeFromString<Comment>(text)
                 TYPE_JOB -> json.decodeFromString<Job>(text)
                 TYPE_POLL -> json.decodeFromString<Poll>(text)
@@ -63,6 +61,7 @@ fun Item.getCommentCount(): Int? = when (this) {
     else -> null
 }
 
+@OptIn(ExperimentalTime::class)
 fun Item.getInstant(): Instant = when (this) {
     is Ask -> time
     is Job -> time
@@ -72,7 +71,8 @@ fun Item.getInstant(): Instant = when (this) {
     is Comment -> time
 }.toInstant()
 
-fun Item.getFormatedDiffTime(): String =
+@OptIn(ExperimentalTime::class)
+fun Item.getFormattedDiffTime(): String =
     when (val diff = Clock.System.now().minus(getInstant()).toLong(DurationUnit.SECONDS)) {
         in 0..60 -> "$diff seconds ago"
         in 60..3600 -> "${diff / 60} minutes ago"
@@ -80,7 +80,17 @@ fun Item.getFormatedDiffTime(): String =
         else -> "${diff / 86400} days ago"
     }
 
-fun Item.getFormatedTime(): String =
+@OptIn(ExperimentalTime::class)
+fun Item.getFormattedDiffTimeShort(): String =
+    when (val diff = Clock.System.now().minus(getInstant()).toLong(DurationUnit.SECONDS)) {
+        in 0..60 -> "${diff}s"
+        in 60..3600 -> "${diff / 60}m"
+        in 3600..86400 -> "${diff / 3600}h"
+        else -> "${diff / 86400}d"
+    }
+
+@OptIn(ExperimentalTime::class)
+fun Item.getFormattedTime(): String =
     getInstant().toLocalDateTime(TimeZone.currentSystemDefault()).format()
 
 fun Item.getTitle(): String = when (this) {
@@ -88,7 +98,7 @@ fun Item.getTitle(): String = when (this) {
     is Job -> title
     is Poll -> title
     is Story -> title
-    else -> throw IllegalStateException("Unsupported item type")
+    else -> error("Unsupported item type")
 }
 
 fun Item.getText(): String? = when (this) {
@@ -97,7 +107,7 @@ fun Item.getText(): String? = when (this) {
     is Poll -> text
     is Story -> text
     is Comment -> text
-    else -> throw IllegalStateException("Unsupported item type")
+    else -> error("Unsupported item type")
 }
 
 fun Item.getUrl(): String? = when (this) {
@@ -117,7 +127,7 @@ fun Item.getUserName(): String = when (this) {
 
 fun Item.getPoint(): Int = when (this) {
     is Ask -> score
-    is Comment -> throw IllegalStateException("Unsupported item type")
+    is Comment -> error("Unsupported item type")
     is Job -> score
     is Poll -> score
     is PollOption -> score

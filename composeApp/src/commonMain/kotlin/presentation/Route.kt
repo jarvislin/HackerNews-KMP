@@ -1,7 +1,6 @@
 package presentation
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -9,51 +8,32 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import domain.models.getUrl
-import presentation.screens.DetailsRoute
-import presentation.screens.DetailsScreen
-import presentation.screens.MainScreen
-import presentation.screens.WebRoute
-import presentation.screens.WebScreen
-
-enum class RouteScreen {
-    Main,
-    Details,
-    Web
-}
+import presentation.screens.details.DetailsRoute
+import presentation.screens.details.DetailsScreen
+import presentation.screens.details.DetailsScreenTab
+import presentation.screens.main.MainRoute
+import presentation.screens.main.MainScreen
 
 @Composable
 fun RootScreen(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
-        startDestination = RouteScreen.Main.name,
-        modifier = Modifier.fillMaxSize().statusBarsPadding()
+        startDestination = MainRoute,
+        modifier = Modifier.fillMaxSize()
     ) {
-        composable(RouteScreen.Main.name) {
+        composable<MainRoute> {
             MainScreen(
-                onClickItem = {
-                    if (it.getUrl() != null) {
-                        navController.navigate(WebRoute(it.getItemId()))
-                    } else {
-                        navController.navigate(DetailsRoute(it.getItemId()))
-                    }
-                },
-                onClickComment = { navController.navigate(DetailsRoute(it.getItemId())) }
-            )
-        }
-        composable<WebRoute> { backStackEntry ->
-            WebScreen(
-                itemId = backStackEntry.toRoute<WebRoute>().id,
-                onBack = { navController.popBackStack() },
-                onClickComment = { navController.navigate(DetailsRoute(it.getItemId())) }
+                onClickItem = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Webview.name)) },
+                onClickComment = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Comments.name)) }
             )
         }
 
         composable<DetailsRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<DetailsRoute>()
             DetailsScreen(
-                itemId = backStackEntry.toRoute<DetailsRoute>().id,
+                itemId = route.id,
+                tab = DetailsScreenTab.from(route.tab),
                 onBack = { navController.popBackStack() },
-                onClickLink = { navController.navigate(WebRoute(it.getItemId())) }
             )
         }
     }

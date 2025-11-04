@@ -21,4 +21,18 @@ data class PollOption(
     val text: String,
     @SerialName("time")
     val time: Long,
+    @SerialName("type")
+    val type: String,
 ) : Item()
+
+val samplePollOptionJson = """
+    {
+      "by" : "pg",
+      "id" : 160705,
+      "poll" : 160704,
+      "score" : 335,
+      "text" : "Yes, ban them; I'm tired of seeing Valleywag stories on News.YC.",
+      "time" : 1207886576,
+      "type" : "pollopt"
+    }
+""".trimIndent()
