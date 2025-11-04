@@ -23,8 +23,8 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
     ) {
         composable<MainRoute> {
             MainScreen(
-                onClickItem = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Webview)) },
-                onClickComment = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Comments)) }
+                onClickItem = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Webview.name)) },
+                onClickComment = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Comments.name)) }
             )
         }
 
@@ -32,7 +32,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
             val route = backStackEntry.toRoute<DetailsRoute>()
             DetailsScreen(
                 itemId = route.id,
-                tab = route.tab,
+                tab = DetailsScreenTab.from(route.tab),
                 onBack = { navController.popBackStack() },
             )
         }

@@ -42,11 +42,15 @@ data class DetailsRoute(
     @SerialName("id")
     val id: Long,
     @SerialName("tab")
-    val tab: DetailsScreenTab
+    val tab: String // on iOS, NavHost 2.9.1 doesn't like when this is an enum (like DetailsScreenTab)
 )
 
 enum class DetailsScreenTab {
-    Webview, Comments
+    Webview, Comments;
+
+    companion object {
+        fun from(value: String) = entries.first { it.name.equals(value, ignoreCase = true) }
+    }
 }
 
 @Composable
