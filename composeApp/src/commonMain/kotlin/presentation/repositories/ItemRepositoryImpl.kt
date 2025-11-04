@@ -40,14 +40,17 @@ class ItemRepositoryImpl(
         }
 
     override suspend fun fetchComments(depth: Int, ids: List<Long>): Flow<Result<Comment>> = flow {
-        ids.forEach { id ->
+        val left = ids.toMutableList()
+
+        while (left.isNotEmpty()) {
+            val id = left.removeAt(0)
             val result = fetchItem(id)
             if (result.isSuccess) {
                 val comment = result.getOrThrow() as? Comment
                 if (comment != null) {
-                    emit(Result.success(comment.copy(depth = depth)))
+                    emit(Result.success(comment))
                     if (comment.commentIds.isNotEmpty()) {
-                        fetchComments(depth + 1, comment.commentIds).collect { emit(it) }
+                        left.addAll(0, comment.commentIds)
                     }
                 }
             } else {

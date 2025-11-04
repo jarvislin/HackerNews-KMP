@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import data.local.AppPreferences
 import domain.interactors.GetItems
 import domain.interactors.GetStories
 import domain.models.Category
@@ -11,9 +12,21 @@ import domain.models.Item
 import domain.models.TopStories
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val getStories: GetStories, private val getItems: GetItems) : ViewModel() {
+class MainViewModel(
+    private val getStories: GetStories,
+    private val getItems: GetItems,
+    private val appPreferences: AppPreferences,
+) : ViewModel() {
     private val _state = mutableStateOf(MainState())
     val state: State<MainState> = _state
+
+    init {
+        viewModelScope.launch {
+            appPreferences.seenItemList.collect {
+                _state.value = state.value.copy(seenItemsIds = it)
+            }
+        }
+    }
 
     fun loadNextPage() {
         if (state.value.loading) return
@@ -64,6 +77,12 @@ class MainViewModel(private val getStories: GetStories, private val getItems: Ge
         loadNextPage()
     }
 
+    fun markItemAsSeen(item: Item) {
+        viewModelScope.launch {
+            appPreferences.markItemAsSeen(item.getItemId().toString())
+        }
+    }
+
     companion object {
         const val PAGE_SIZE = 20
     }
@@ -72,6 +91,7 @@ class MainViewModel(private val getStories: GetStories, private val getItems: Ge
 data class MainState(
     val items: List<Item> = emptyList(),
     val itemIds: List<Long> = emptyList(),
+    val seenItemsIds: Set<String> = emptySet(),
     val loading: Boolean = false,
     val refreshing: Boolean = false,
     val error: Throwable? = null,

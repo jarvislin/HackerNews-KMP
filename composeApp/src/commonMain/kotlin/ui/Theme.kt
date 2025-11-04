@@ -1,7 +1,25 @@
 package ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
+import coil3.ColorImage
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.AsyncImagePreviewHandler
+import coil3.compose.LocalAsyncImagePreviewHandler
+import getPlatform
 
 val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -79,3 +97,43 @@ val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun AppPreview(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable BoxScope.() -> Unit
+) {
+    val colorScheme = if (darkTheme) darkScheme else lightScheme
+    val previewHandler = AsyncImagePreviewHandler { request ->
+        request.placeholder() ?: ColorImage(Color.Gray.toArgb())
+    }
+    MaterialTheme(colorScheme = colorScheme) {
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground,
+            LocalAsyncImagePreviewHandler provides previewHandler
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(16.dp),
+                content = content
+            )
+        }
+    }
+}
+
+@Composable
+fun AppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    MaterialTheme(
+        typography = getPlatform().getTypography(),
+        colorScheme = getPlatform().getColorScheme(darkTheme),
+    ) {
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground,
+            content = content
+        )
+    }
+}
