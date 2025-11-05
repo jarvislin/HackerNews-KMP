@@ -8,7 +8,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import hackernewskmp.composeapp.generated.resources.Res
-import hackernewskmp.composeapp.generated.resources.bitter_regular
+import hackernewskmp.composeapp.generated.resources.google_sans_code_regular
 import hackernewskmp.composeapp.generated.resources.product_sans_bold
 import hackernewskmp.composeapp.generated.resources.product_sans_italic
 import hackernewskmp.composeapp.generated.resources.product_sans_regular
@@ -16,8 +16,8 @@ import org.jetbrains.compose.resources.Font
 
 
 @Composable
-fun bitterFontFamily() = FontFamily(
-    Font(resource = Res.font.bitter_regular)
+fun googleSansCodeFontFamily() = FontFamily(
+    Font(resource = Res.font.google_sans_code_regular),
 )
 
 @Composable

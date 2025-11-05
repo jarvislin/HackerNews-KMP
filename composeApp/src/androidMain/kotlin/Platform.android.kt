@@ -51,6 +51,17 @@ class AndroidPlatform(private val context: Context) : Platform {
             }
         }
 
+    override fun share(title: String, text: String) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, title)
+            putExtra(Intent.EXTRA_TEXT, text)
+        }
+        context.startActivity(Intent.createChooser(shareIntent, "Share via").apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        })
+    }
+
     @Composable
     override fun getScreenWidth(): Float =
         with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.toPx() }

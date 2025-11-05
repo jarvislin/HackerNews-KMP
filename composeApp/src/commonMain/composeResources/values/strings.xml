@@ -15,4 +15,6 @@
         <item quantity="one">%1$d comment</item>
         <item quantity="other">%1$d comments</item>
     </plurals>
+    <string name="Share_Link">Share Link</string>
+    <string name="Share_Comments">Share Comments</string>
 </resources>

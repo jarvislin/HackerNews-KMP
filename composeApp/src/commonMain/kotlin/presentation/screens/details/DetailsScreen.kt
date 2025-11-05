@@ -7,15 +7,18 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -30,6 +33,8 @@ import domain.models.getUrl
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.retry
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
@@ -65,8 +70,15 @@ fun DetailsScreen(
     val state by detailsViewModel.state
     val snackBarHostState = remember { SnackbarHostState() }
     val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
-    val onClickLink = item.getUrl()?.let {
-        { uriHandler.openUri(it) }
+    val onClickLink = {
+        val url = item.getUrl() ?: error("No URL found")
+        uriHandler.openUri(url)
+    }
+    val onShareLink = {
+        detailsViewModel.shareLink(item)
+    }
+    val onShareComments = {
+        detailsViewModel.shareComments(item)
     }
 
     DetailsScreenContent(
@@ -75,7 +87,9 @@ fun DetailsScreen(
         item = item,
         tab = tab,
         onBack = onBack,
-        onClickLink = onClickLink
+        onOpenInBrowser = onClickLink,
+        onShareLink = onShareLink,
+        onShareComments = onShareComments,
     )
 
     LaunchedEffect(Unit) {
@@ -91,7 +105,7 @@ fun DetailsScreen(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DetailsScreenContent(
     snackBarHostState: SnackbarHostState,
@@ -99,10 +113,33 @@ fun DetailsScreenContent(
     item: Item,
     tab: DetailsScreenTab,
     onBack: () -> Unit,
-    onClickLink: (() -> Unit)?
+    onOpenInBrowser: () -> Unit,
+    onShareLink: () -> Unit,
+    onShareComments: () -> Unit,
 ) {
     val urlString = item.getUrl()
     var selectedTab by remember(tab, urlString) { mutableStateOf(if (urlString == null) DetailsScreenTab.Comments else tab) }
+    var isSheetVisible by remember { mutableStateOf(false) }
+
+    DetailsShareSheet(
+        isVisible = isSheetVisible,
+        item = item,
+        onOpenInBrowser = {
+            onOpenInBrowser()
+            isSheetVisible = false
+        },
+        onShareLink = {
+            onShareLink()
+            isSheetVisible = false
+        },
+        onShareComments = {
+            onShareComments()
+            isSheetVisible = false
+        },
+        onVisibility = {
+            isSheetVisible = it
+        }
+    )
 
     Scaffold(
         topBar = {
@@ -112,7 +149,7 @@ fun DetailsScreenContent(
                 commentCount = item.getCommentCount() ?: 0,
                 onTabSelected = { selectedTab = it },
                 onBack = onBack,
-                onClickLink = onClickLink.takeIf { urlString != null }
+                onClickOpenExternal = { isSheetVisible = true }
             )
         },
         snackbarHost = { SnackbarHost(snackBarHostState) }

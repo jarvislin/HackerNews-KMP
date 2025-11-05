@@ -13,12 +13,17 @@ import com.multiplatform.webview.request.WebRequest
 import com.multiplatform.webview.request.WebRequestInterceptResult
 import com.multiplatform.webview.setting.PlatformWebSettings
 import com.multiplatform.webview.web.WebViewNavigator
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path.Companion.toPath
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
+import platform.Foundation.create
+import platform.UIKit.UIActivityViewController
+import platform.UIKit.UIApplication
 import platform.UIKit.UIDevice
 import ui.baseline
 import ui.darkScheme
@@ -46,6 +51,22 @@ class IOSPlatform : Platform {
         )
 
     override fun webRequestInterceptor(): RequestInterceptor? = null
+
+    @OptIn(BetaInteropApi::class)
+    override fun share(title: String, text: String) {
+        val activityItems = listOf(
+            NSString.create(text)
+        )
+
+        val activityViewController = UIActivityViewController(
+            activityItems = activityItems,
+            applicationActivities = null
+        )
+
+        // Get the top-most view controller to present the activity view controller
+        val rootViewController = UIApplication.sharedApplication.keyWindow?.rootViewController
+        rootViewController?.presentViewController(activityViewController, animated = true, completion = null)
+    }
 
     @Composable
     override fun getScreenWidth(): Float =

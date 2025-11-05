@@ -42,6 +42,9 @@ navigation-compose = "2.9.1"
 # https://github.com/stoyan-vuchev/squircle-shape/releases
 squircleShape = "4.0.0"
 
+# https://mvnrepository.com/artifact/org.jetbrains.compose.ui/ui-backhandler
+uiBackhandler = "1.9.3"
+
 [libraries]
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
@@ -60,6 +63,7 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 squircle-shape = { module = "com.stoyanvuchev:squircle-shape", version.ref = "squircleShape" }
+ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "uiBackhandler" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

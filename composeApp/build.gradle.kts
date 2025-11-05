@@ -58,6 +58,7 @@ kotlin {
             implementation(libs.squircle.shape)
             implementation(libs.androidx.datastore)
             implementation(libs.androidx.datastore.preferences)
+            implementation(libs.ui.backhandler)
         }
     }
 }

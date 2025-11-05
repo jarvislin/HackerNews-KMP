@@ -15,6 +15,8 @@ interface Platform {
 
     fun webRequestInterceptor(): RequestInterceptor?
 
+    fun share(title: String, text: String)
+
     @Composable
     fun getScreenWidth(): Float
     fun isAndroid(): Boolean
