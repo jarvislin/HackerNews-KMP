@@ -7,6 +7,8 @@ import com.multiplatform.webview.request.RequestInterceptor
 
 interface Platform {
     val name: String
+    val appName: String
+    val appVersion: String
 
     /**
      *   Gets the singleton DataStore instance, creating it if necessary.

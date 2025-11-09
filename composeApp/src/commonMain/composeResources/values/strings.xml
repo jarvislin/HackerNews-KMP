@@ -1,13 +1,18 @@
 <resources>
+    <string name="About">About</string>
     <string name="an_error_occurred">An error occurred</string>
+    <string name="Back_button_content_description">Back</string>
+    <string name="App_Icon_content_description">Hacker News KMP App Icon</string>
     <string name="retry">Retry</string>
     <string name="loading">Loading...</string>
     <string name="points">%1$d points</string>
     <string name="webview_error">Webview error: %1$s</string>
     <string name="go_back">Go back</string>
     <string name="reload_web_page">Reload the web page</string>
+    <string name="Open_Source_Libraries">Open Source Libraries</string>
     <string name="open_with_the_default_browser">Open with the default browser</string>
     <string name="open_with_x">Open with {browser-name}</string>
+    <string name="Version_version_author">Version {version-name} • {author}</string>
     <string name="browse_comments">Browse comments</string>
     <string name="details">Details</string>
     <string name="back">Back</string>

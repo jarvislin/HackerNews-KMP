@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import extensions.toUrl
 import extensions.trimmedHostName
+import hackernewskmp.composeapp.generated.resources.Back_button_content_description
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.back
 import hackernewskmp.composeapp.generated.resources.ic_arrow_left_linear
@@ -71,7 +72,7 @@ fun DetailsTopBar(
             IconButton(onClick = onBack) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_arrow_left_linear),
-                    contentDescription = stringResource(Res.string.back),
+                    contentDescription = stringResource(Res.string.Back_button_content_description),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
