@@ -68,6 +68,8 @@ class IOSPlatform : Platform {
         rootViewController?.presentViewController(activityViewController, animated = true, completion = null)
     }
 
+    override fun getDefaultBrowserName(urlString: String): String? = null
+
     @Composable
     override fun getScreenWidth(): Float =
         LocalWindowInfo.current.containerSize.width.toFloat()

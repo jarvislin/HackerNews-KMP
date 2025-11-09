@@ -18,6 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import domain.models.Item
 import domain.models.getUrl
 import extensions.shareCommentsText
 import extensions.shareLinkText
+import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.Share_Comments
 import hackernewskmp.composeapp.generated.resources.Share_Link
@@ -34,9 +36,9 @@ import hackernewskmp.composeapp.generated.resources.ic_comments_share
 import hackernewskmp.composeapp.generated.resources.ic_square_share_line_linear
 import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
 import hackernewskmp.composeapp.generated.resources.open_with_the_default_browser
+import hackernewskmp.composeapp.generated.resources.open_with_x
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -109,16 +111,22 @@ private fun SheetContent(
             .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
     ) {
         item.getUrl()?.let { urlString ->
+            val defaultBrowserName = remember(urlString) { getPlatform().getDefaultBrowserName(urlString) }
+            val buttonText = when {
+                defaultBrowserName == null -> stringResource(Res.string.open_with_the_default_browser)
+                else -> stringResource(Res.string.open_with_x)
+                    .replace("{browser-name}", defaultBrowserName)
+            }
             SheetItem(
                 icon = Res.drawable.ic_square_top_down_linear,
-                buttonText = Res.string.open_with_the_default_browser,
+                buttonText = buttonText,
                 sharedText = urlString,
                 onClick = onOpenInBrowser
             )
             Spacer(modifier = Modifier.height(16.dp))
             SheetItem(
                 icon = Res.drawable.ic_square_share_line_linear,
-                buttonText = Res.string.Share_Link,
+                buttonText = stringResource(Res.string.Share_Link),
                 sharedText = item.shareLinkText(),
                 onClick = onShareLink
             )
@@ -126,7 +134,7 @@ private fun SheetContent(
         }
         SheetItem(
             icon = Res.drawable.ic_comments_share,
-            buttonText = Res.string.Share_Comments,
+            buttonText = stringResource(Res.string.Share_Comments),
             sharedText = item.shareCommentsText(),
             onClick = onShareComments
         )
@@ -136,7 +144,7 @@ private fun SheetContent(
 @Composable
 private fun SheetItem(
     icon: DrawableResource,
-    buttonText: StringResource,
+    buttonText: String,
     sharedText: String,
     onClick: () -> Unit,
 ) {
@@ -146,7 +154,7 @@ private fun SheetItem(
             contentDescription = null,
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(stringResource(buttonText))
+        Text(buttonText)
     }
     SelectionContainer(
         modifier = Modifier

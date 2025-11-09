@@ -17,6 +17,8 @@ interface Platform {
 
     fun share(title: String, text: String)
 
+    fun getDefaultBrowserName(urlString: String): String?
+
     @Composable
     fun getScreenWidth(): Float
     fun isAndroid(): Boolean

@@ -1,5 +1,6 @@
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Typography
@@ -10,6 +11,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
@@ -60,6 +62,18 @@ class AndroidPlatform(private val context: Context) : Platform {
         context.startActivity(Intent.createChooser(shareIntent, "Share via").apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         })
+    }
+
+    override fun getDefaultBrowserName(urlString: String): String? {
+        val intent = Intent(Intent.ACTION_VIEW, urlString.toUri())
+        val resolveInfo = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        val pkgName = resolveInfo?.activityInfo?.packageName ?: return null
+        return try {
+            val appInfo = context.packageManager.getApplicationInfo(pkgName, 0)
+            context.packageManager.getApplicationLabel(appInfo).toString()
+        } catch (_: Exception) {
+            null
+        }
     }
 
     @Composable
