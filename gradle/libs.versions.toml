@@ -4,7 +4,7 @@ agp = "8.13.0"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "36"
-compose-plugin = "1.9.1"
+compose-plugin = "1.9.3"
 
 kotlin = "2.2.21"
 
@@ -32,7 +32,7 @@ kotlinx-serialization-json = "1.9.0"
 kotlinx-datetime = "0.7.1"
 
 # https://ktor.io/docs/client-create-multiplatform-application.html#build-script
-ktor = "3.3.1"
+ktor = "3.3.2"
 
 # https://github.com/AAkira/Napier/releases
 napier = "2.7.1"
