@@ -15,6 +15,7 @@ import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import com.jarvislin.hackernews.BuildConfig
 import com.jarvislin.hackernews.HnKmp
 import com.jarvislin.hackernews.R
 import com.multiplatform.webview.request.RequestInterceptor
@@ -32,7 +33,9 @@ class AndroidPlatform(private val context: Context) : Platform {
 
     override val appName: String = context.getString(R.string.app_name)
 
-    override val appVersion: String = "1.2.0" //TODO: get from toml
+    override val appVersionName: String = BuildConfig.VERSION_NAME
+
+    override val appVersionCode: Int = BuildConfig.VERSION_CODE
 
     override fun createDataStore(): DataStore<Preferences> =
         PreferenceDataStoreFactory.createWithPath(

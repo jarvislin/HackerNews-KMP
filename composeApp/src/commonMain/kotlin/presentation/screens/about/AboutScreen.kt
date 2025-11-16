@@ -57,7 +57,8 @@ object AboutRoute
 @Composable
 fun AboutScreen(onBack: () -> Unit) {
     val uriHandler = LocalUriHandler.current
-    val appVersion = getPlatform().appVersion
+    val appVersionName = getPlatform().appVersionName
+    val appVersionCode = getPlatform().appVersionCode.toString()
     val appName = getPlatform().appName
     Scaffold(
         topBar = {
@@ -109,7 +110,8 @@ fun AboutScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             Text(
                 text = stringResource(Res.string.Version_version_author)
-                    .replace("{version-name}", appVersion)
+                    .replace("{version-name}", appVersionName)
+                    .replace("{version-code}", appVersionCode)
                     .replace("{author}", AUTHOR),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center

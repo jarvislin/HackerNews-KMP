@@ -12,7 +12,7 @@
     <string name="Open_Source_Libraries">Open Source Libraries</string>
     <string name="open_with_the_default_browser">Open with the default browser</string>
     <string name="open_with_x">Open with {browser-name}</string>
-    <string name="Version_version_author">Version {version-name} • {author}</string>
+    <string name="Version_version_author">Version {version-name}({version-code}) • {author}</string>
     <string name="browse_comments">Browse comments</string>
     <string name="details">Details</string>
     <string name="back">Back</string>
