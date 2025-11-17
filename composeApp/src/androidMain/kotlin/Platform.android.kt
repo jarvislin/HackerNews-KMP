@@ -22,6 +22,7 @@ import com.multiplatform.webview.request.RequestInterceptor
 import com.multiplatform.webview.request.WebRequest
 import com.multiplatform.webview.request.WebRequestInterceptResult
 import com.multiplatform.webview.web.WebViewNavigator
+import io.github.aakira.napier.Napier
 import okio.Path.Companion.toPath
 import ui.appTypography
 import ui.darkScheme
@@ -54,7 +55,7 @@ class AndroidPlatform(private val context: Context) : Platform {
                         context.startActivity(intent)
                         return WebRequestInterceptResult.Reject
                     } catch (e: Exception) {
-                        // Handle fallback
+                        Napier.i("Failed to parse and start intent", e)
                     }
                 }
                 return WebRequestInterceptResult.Allow
