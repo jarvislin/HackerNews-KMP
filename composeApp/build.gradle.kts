@@ -116,7 +116,11 @@ tasks.named("generateComposeResClass") {
  * See: https://medium.com/@rrmunro/building-deploying-a-simple-kmp-app-part-6-release-ci-on-github-bfc8bb2783cc
  */
 tasks.register("updatePlistVersion") {
-    val plistFile = project.file("../iosApp/iosApp/Info.plist") // Path to your `Info.plist` file
+    val plistFile = project.file("../iosApp/iosApp/Info.plist") // Path to `Info.plist` file in iOS app project
+
+    inputs.property("versionName", libs.versions.app.version.name)
+    inputs.property("versionCode", libs.versions.app.version.code)
+    outputs.file(plistFile)
 
     doLast {
         if (!plistFile.exists()) {
