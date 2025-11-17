@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import domain.models.Category
 import domain.models.Item
 import hackernewskmp.composeapp.generated.resources.Res
+import hackernewskmp.composeapp.generated.resources.about
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.ic_alt_arrow_down_linear
 import hackernewskmp.composeapp.generated.resources.ic_info_circle_linear
@@ -176,7 +177,7 @@ fun AppTopBar(onClickAbout: () -> Unit, viewModel: MainViewModel = koinInject())
             IconButton(onClick = onClickAbout) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_info_circle_linear),
-                    contentDescription = "About",
+                    contentDescription = stringResource(Res.string.about),
                 )
             }
         }

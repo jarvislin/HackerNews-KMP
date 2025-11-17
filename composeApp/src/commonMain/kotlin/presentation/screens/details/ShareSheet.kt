@@ -24,19 +24,20 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
+import com.multiplatform.webview.web.defaultWebViewFactory
 import domain.models.Item
 import domain.models.getUrl
 import extensions.shareCommentsText
 import extensions.shareLinkText
 import getPlatform
 import hackernewskmp.composeapp.generated.resources.Res
-import hackernewskmp.composeapp.generated.resources.Share_Comments
-import hackernewskmp.composeapp.generated.resources.Share_Link
 import hackernewskmp.composeapp.generated.resources.ic_comments_share
 import hackernewskmp.composeapp.generated.resources.ic_square_share_line_linear
 import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
 import hackernewskmp.composeapp.generated.resources.open_with_the_default_browser
 import hackernewskmp.composeapp.generated.resources.open_with_x
+import hackernewskmp.composeapp.generated.resources.share_comments
+import hackernewskmp.composeapp.generated.resources.share_link
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -114,8 +115,7 @@ private fun SheetContent(
             val defaultBrowserName = remember(urlString) { getPlatform().getDefaultBrowserName(urlString) }
             val buttonText = when {
                 defaultBrowserName == null -> stringResource(Res.string.open_with_the_default_browser)
-                else -> stringResource(Res.string.open_with_x)
-                    .replace("{browser-name}", defaultBrowserName)
+                else -> stringResource(Res.string.open_with_x, defaultBrowserName)
             }
             SheetItem(
                 icon = Res.drawable.ic_square_top_down_linear,
@@ -126,7 +126,7 @@ private fun SheetContent(
             Spacer(modifier = Modifier.height(16.dp))
             SheetItem(
                 icon = Res.drawable.ic_square_share_line_linear,
-                buttonText = stringResource(Res.string.Share_Link),
+                buttonText = stringResource(Res.string.share_link),
                 sharedText = item.shareLinkText(),
                 onClick = onShareLink
             )
@@ -134,7 +134,7 @@ private fun SheetContent(
         }
         SheetItem(
             icon = Res.drawable.ic_comments_share,
-            buttonText = stringResource(Res.string.Share_Comments),
+            buttonText = stringResource(Res.string.share_comments),
             sharedText = item.shareCommentsText(),
             onClick = onShareComments
         )

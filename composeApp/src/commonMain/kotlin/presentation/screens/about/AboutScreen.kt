@@ -32,15 +32,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import getPlatform
-import hackernewskmp.composeapp.generated.resources.About
-import hackernewskmp.composeapp.generated.resources.App_Icon_content_description
-import hackernewskmp.composeapp.generated.resources.Back_button_content_description
-import hackernewskmp.composeapp.generated.resources.Open_Source_Libraries
 import hackernewskmp.composeapp.generated.resources.Res
-import hackernewskmp.composeapp.generated.resources.Version_version_author
+import hackernewskmp.composeapp.generated.resources.about
+import hackernewskmp.composeapp.generated.resources.app_icon_content_description
+import hackernewskmp.composeapp.generated.resources.back_button_content_description
 import hackernewskmp.composeapp.generated.resources.ic_arrow_left_linear
 import hackernewskmp.composeapp.generated.resources.ic_launcher_mono
 import hackernewskmp.composeapp.generated.resources.ic_square_top_down_linear
+import hackernewskmp.composeapp.generated.resources.open_source_libraries
+import hackernewskmp.composeapp.generated.resources.version_version_author
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -63,12 +63,12 @@ fun AboutScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(Res.string.About)) },
+                title = { Text(text = stringResource(Res.string.about)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_arrow_left_linear),
-                            contentDescription = stringResource(Res.string.Back_button_content_description),
+                            contentDescription = stringResource(Res.string.back_button_content_description),
                         )
                     }
                 },
@@ -96,7 +96,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 )
                 Icon(
                     painter = painterResource(Res.drawable.ic_launcher_mono),
-                    contentDescription = stringResource(Res.string.App_Icon_content_description),
+                    contentDescription = stringResource(Res.string.app_icon_content_description),
                     tint = HnColor.launcherForeground,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -108,11 +108,14 @@ fun AboutScreen(onBack: () -> Unit) {
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(8.dp))
+
             Text(
-                text = stringResource(Res.string.Version_version_author)
-                    .replace("{version-name}", appVersionName)
-                    .replace("{version-code}", appVersionCode)
-                    .replace("{author}", AUTHOR),
+                text = stringResource(
+                    Res.string.version_version_author,
+                    appVersionName,
+                    appVersionCode,
+                    AUTHOR
+                ),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -122,7 +125,7 @@ fun AboutScreen(onBack: () -> Unit) {
             }
             Spacer(Modifier.height(24.dp))
             Text(
-                text = stringResource(Res.string.Open_Source_Libraries),
+                text = stringResource(Res.string.open_source_libraries),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.align(Alignment.Start)
             )
