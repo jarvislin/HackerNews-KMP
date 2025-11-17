@@ -80,7 +80,8 @@ class AndroidPlatform(private val context: Context) : Platform {
         return try {
             val appInfo = context.packageManager.getApplicationInfo(pkgName, 0)
             context.packageManager.getApplicationLabel(appInfo).toString()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Napier.i("Could not get application info", e)
             null
         }
     }
