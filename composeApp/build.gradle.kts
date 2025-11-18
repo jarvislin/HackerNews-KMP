@@ -58,6 +58,7 @@ kotlin {
             implementation(libs.squircle.shape)
             implementation(libs.androidx.datastore)
             implementation(libs.androidx.datastore.preferences)
+            implementation(libs.ui.backhandler)
         }
     }
 }
@@ -74,8 +75,8 @@ android {
         applicationId = "com.jarvislin.hackernews"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 6
-        versionName = "1.2.0"
+        versionCode = libs.versions.app.version.code.get().toInt()
+        versionName = libs.versions.app.version.name.get()
     }
 
     packaging {
@@ -94,8 +95,54 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     dependencies {
         debugImplementation(compose.uiTooling)
+    }
+}
+
+/**
+ * Convenient hook to run code generation type tasks when project is built.
+ * See: https://medium.com/@rrmunro/building-deploying-a-simple-kmp-app-part-6-release-ci-on-github-bfc8bb2783cc
+ */
+tasks.named("generateComposeResClass") {
+    dependsOn("updatePlistVersion")
+}
+
+/**
+ * Pulls the latest appVersion from libs.versions.toml, and updates
+ * the `Info.plist` file in the iosApp project.
+ * See: https://medium.com/@rrmunro/building-deploying-a-simple-kmp-app-part-6-release-ci-on-github-bfc8bb2783cc
+ */
+tasks.register("updatePlistVersion") {
+    val plistFile = project.file("../iosApp/iosApp/Info.plist") // Path to `Info.plist` file in iOS app project
+
+    inputs.property("versionName", libs.versions.app.version.name)
+    inputs.property("versionCode", libs.versions.app.version.code)
+    outputs.file(plistFile)
+
+    doLast {
+        if (!plistFile.exists()) {
+            throw GradleException("Info.plist not found at ${plistFile.absolutePath}")
+        }
+
+        val appVersionName: String = libs.versions.app.version.name.get()
+        val appVersionCode: Int = libs.versions.app.version.code.get().toInt()
+
+        var plistContent = plistFile.readText()
+
+        println("Updating iOS app version name in ${plistFile.absoluteFile} to $appVersionName")
+        plistContent = plistContent.replace(
+            Regex("<key>CFBundleShortVersionString</key>\\s*<string>.*?</string>"),
+            "<key>CFBundleShortVersionString</key>\n\t<string>$appVersionName</string>"
+        )
+        println("Updating iOS app version code in ${plistFile.absoluteFile} to $appVersionCode")
+        plistContent = plistContent.replace(
+            Regex("<key>CFBundleVersion</key>\\s*<string>.*?</string>"),
+            "<key>CFBundleVersion</key>\n\t<string>$appVersionCode</string>"
+        )
+
+        plistFile.writeText(plistContent)
     }
 }

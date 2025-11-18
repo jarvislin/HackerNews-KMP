@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import extensions.toUrl
 import extensions.trimmedHostName
 import hackernewskmp.composeapp.generated.resources.Res
-import hackernewskmp.composeapp.generated.resources.back
+import hackernewskmp.composeapp.generated.resources.back_button_content_description
 import hackernewskmp.composeapp.generated.resources.ic_arrow_left_linear
 import hackernewskmp.composeapp.generated.resources.ic_chat_line_linear
 import hackernewskmp.composeapp.generated.resources.ic_global_outline
@@ -44,8 +44,8 @@ fun DetailsTopBar(
     commentCount: Int,
     onTabSelected: (DetailsScreenTab) -> Unit,
     onBack: () -> Unit,
+    onClickOpenExternal: () -> Unit,
     modifier: Modifier = Modifier,
-    onClickLink: (() -> Unit)? = null
 ) {
     val trimmedHostName = urlString?.toUrl()?.trimmedHostName()
     val commentsLabel = pluralStringResource(Res.plurals.x_comments, commentCount, commentCount)
@@ -71,7 +71,7 @@ fun DetailsTopBar(
             IconButton(onClick = onBack) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_arrow_left_linear),
-                    contentDescription = stringResource(Res.string.back),
+                    contentDescription = stringResource(Res.string.back_button_content_description),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -113,14 +113,12 @@ fun DetailsTopBar(
                     }
                 }
             }
-            if (urlString != null && onClickLink != null) {
-                IconButton(onClick = onClickLink) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_square_top_down_linear),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+            IconButton(onClick = onClickOpenExternal) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_square_top_down_linear),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     )
@@ -160,7 +158,7 @@ private fun Preview_DetailsTopBar(
             commentCount = 10,
             onTabSelected = {selectedTab = it},
             onBack = {},
-            onClickLink = {},
+            onClickOpenExternal = {},
             modifier = Modifier.border(1.dp, Color.Black)
         )
     }

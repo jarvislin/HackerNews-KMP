@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.WebViewState
@@ -23,8 +25,17 @@ import utils.Constants
 fun WebviewTabContent(
     url: String,
     modifier: Modifier = Modifier,
-    webViewNavigator: WebViewNavigator = rememberWebViewNavigator(),
-    webViewState: WebViewState = rememberWebViewState(wrapUrl(url)),
+    defaultBackgroundColor: Color = MaterialTheme.colorScheme.background,
+    webViewNavigator: WebViewNavigator = rememberWebViewNavigator(
+        requestInterceptor = getPlatform().webRequestInterceptor()
+    ),
+    webViewState: WebViewState = rememberWebViewState(
+        url = wrapUrl(url),
+        extraSettings = {
+            backgroundColor = Color.White
+            iOSWebSettings.underPageBackgroundColor = defaultBackgroundColor
+        }
+    ),
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         WebView(

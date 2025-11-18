@@ -12,6 +12,11 @@ import domain.models.Item
 import domain.models.Poll
 import domain.models.PollOption
 import domain.models.getCommentIds
+import domain.models.getTitle
+import extensions.shareCommentsText
+import extensions.shareLinkText
+import getPlatform
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.takeWhile
@@ -94,19 +99,20 @@ class DetailsViewModel(
         return sum
     }
 
-    fun collapseAll() {
-        TODO()
-//        getAllCommentIds(_comments.value).forEach { id ->
-//            _collapsedStates[id] = true
-//        }
-    }
-
-    fun expandAll() {
-        _collapsedStates.clear()
-    }
-
     fun reset() {
         _state.value = DetailsState()
+    }
+
+    fun shareLink(item: Item) {
+        val shareTitle = item.getTitle()
+        val shareText = item.shareLinkText()
+        getPlatform().share(shareTitle, shareText)
+    }
+
+    fun shareComments(item: Item) {
+        val shareTitle = item.getTitle()
+        val shareText = item.shareCommentsText()
+        getPlatform().share(shareTitle, shareText)
     }
 }
 
