@@ -188,7 +188,7 @@ private fun OpenSourceLibraryRow(
         Text(
             text = library.description,
             style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp)
         )
     }
 }
