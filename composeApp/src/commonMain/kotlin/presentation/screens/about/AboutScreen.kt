@@ -27,6 +27,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,8 @@ import hackernewskmp.composeapp.generated.resources.version_version_author
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import presentation.widgets.RowOrColumnLayout
 import sv.lib.squircleshape.SquircleShape
 import ui.HnColor
 
@@ -131,44 +134,83 @@ fun AboutScreen(onBack: () -> Unit) {
             )
             Spacer(Modifier.height(8.dp))
             Column(
-                verticalArrangement = spacedBy(8.dp),
+                verticalArrangement = spacedBy(16.dp),
             ) {
                 openSourceLibraries.forEach { library ->
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .background(MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(8.dp))
-                            .padding(bottom = 8.dp)
-                    ) {
-                        Row {
-                            TextButton(
-                                onClick = { uriHandler.openUri(library.projectUrl) },
-                            ) {
-                                Icon(
-                                    painterResource(Res.drawable.ic_square_top_down_linear),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = library.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                            TextButton(onClick = { uriHandler.openUri(library.licenseUrl) }) {
-                                Text(text = library.license)
-                            }
-                        }
-                        Text(
-                            text = library.description,
-                            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                    }
+                    OpenSourceLibraryRow(
+                        library = library,
+                        onClickProjectUrl = { uriHandler.openUri(library.projectUrl) },
+                        onClickLicenseUrl = { uriHandler.openUri(library.licenseUrl) },
+                        modifier = Modifier.align(Alignment.Start)
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun OpenSourceLibraryRow(
+    library: OpenSourceLibrary,
+    onClickProjectUrl: () -> Unit,
+    onClickLicenseUrl: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(8.dp))
+    ) {
+        RowOrColumnLayout(
+            primary = {
+                TextButton(
+                    onClick = onClickProjectUrl,
+                ) {
+                    Icon(
+                        painterResource(Res.drawable.ic_square_top_down_linear),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = library.name,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+            },
+            secondary = {
+                TextButton(
+                    onClick = onClickLicenseUrl,
+                ) {
+                    Text(text = library.license)
+                }
+            }
+        )
+        Text(
+            text = library.description,
+            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+    }
+}
+
+@Preview(name = "iPhone SE (250dp)", widthDp = 250)
+@Preview(name = "Narrow (360dp)", widthDp = 360)
+@Preview(name = "Wide (800dp)", widthDp = 800)
+@Composable
+private fun OpenSourceLibraryRowPreview() {
+    val library = OpenSourceLibrary(
+        name = "Compose MP Webview",
+        description = "In-app browser support for article rendering.",
+        license = "Apache 2.0",
+        licenseUrl = "https://github.com/JetBrains/compose-multiplatform/blob/master/LICENSE",
+        projectUrl = "https://www.jetbrains.com/lp/compose-multiplatform/",
+    )
+    MaterialTheme {
+        OpenSourceLibraryRow(
+            library = library,
+            onClickProjectUrl = {},
+            onClickLicenseUrl = {},
+        )
     }
 }
 
