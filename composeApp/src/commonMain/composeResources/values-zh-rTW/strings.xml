@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about">關於</string>
+    <string name="an_error_occurred">發生了錯誤</string>
+    <string name="back_button_content_description">返回</string>
+    <string name="app_icon_content_description">Hacker News KMP App 圖示</string>
+    <string name="retry">重試</string>
+    <string name="loading">讀取中...</string>
+    <string name="points">%1$d 點</string>
+    <string name="webview_error">Webview 錯誤: %1$s</string>
+    <string name="go_back">返回</string>
+    <string name="reload_web_page">重新讀取網頁</string>
+    <string name="open_source_libraries">開源函式庫</string>
+    <string name="open_with_the_default_browser">使用預設瀏覽器開啟</string>
+    <!-- %1$s: browser name (e.g. Chrome) -->
+    <string name="open_with_x">使用 %1$s 開啟</string>
+    <!-- %1$s: version name (e.g. 1.2.0), %1$s: version code/build number (e.g. 123), %3$s: author name (e.g. Jarvis Lin) -->
+    <string name="version_version_author">版本 %1$s(%2$s) • %3$s</string>
+    <string name="browse_comments">瀏覽留言</string>
+    <string name="details">詳細內容</string>
+    <string name="back">返回</string>
+    <string name="no_comment">尚無留言</string>
+    <plurals name="x_comments">
+        <item quantity="one">%1$d 則留言</item>
+        <item quantity="other">%1$d 則留言</item>
+    </plurals>
+    <string name="share_link">分享連結</string>
+    <string name="share_comments">分享留言</string>
+</resources>
