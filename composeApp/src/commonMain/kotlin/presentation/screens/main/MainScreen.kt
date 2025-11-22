@@ -52,9 +52,10 @@ import androidx.compose.ui.unit.dp
 import domain.models.Category
 import domain.models.Item
 import hackernewskmp.composeapp.generated.resources.Res
+import hackernewskmp.composeapp.generated.resources.about
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.ic_alt_arrow_down_linear
-import hackernewskmp.composeapp.generated.resources.ic_refresh_linear
+import hackernewskmp.composeapp.generated.resources.ic_info_circle_linear
 import hackernewskmp.composeapp.generated.resources.loading
 import hackernewskmp.composeapp.generated.resources.retry
 import kotlinx.coroutines.flow.mapNotNull
@@ -71,13 +72,14 @@ object MainRoute
 @Composable
 fun MainScreen(
     onClickItem: (Item) -> Unit,
-    onClickComment: (Item) -> Unit
+    onClickComment: (Item) -> Unit,
+    onClickAbout: () -> Unit,
 ) {
     val viewModel = koinInject<MainViewModel>()
     val state by viewModel.state
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
-        topBar = { AppTopBar() },
+        topBar = { AppTopBar(onClickAbout = onClickAbout) },
         snackbarHost = { SnackbarHost(snackBarHostState) },
         content = { padding ->
             val pullToRefreshState = rememberPullToRefreshState()
@@ -117,7 +119,7 @@ fun MainScreen(
 }
 
 @Composable
-fun AppTopBar(viewModel: MainViewModel = koinInject()) {
+fun AppTopBar(onClickAbout: () -> Unit, viewModel: MainViewModel = koinInject()) {
     val state by viewModel.state
     var expanded by remember { mutableStateOf(false) }
 
@@ -169,6 +171,14 @@ fun AppTopBar(viewModel: MainViewModel = koinInject()) {
                             expanded = false
                         })
                 }
+            }
+        },
+        actions = {
+            IconButton(onClick = onClickAbout) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_info_circle_linear),
+                    contentDescription = stringResource(Res.string.about),
+                )
             }
         }
     )

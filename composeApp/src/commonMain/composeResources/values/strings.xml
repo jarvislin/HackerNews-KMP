@@ -1,12 +1,20 @@
 <resources>
+    <string name="about">About</string>
     <string name="an_error_occurred">An error occurred</string>
+    <string name="back_button_content_description">Back</string>
+    <string name="app_icon_content_description">Hacker News KMP App Icon</string>
     <string name="retry">Retry</string>
     <string name="loading">Loading...</string>
     <string name="points">%1$d points</string>
     <string name="webview_error">Webview error: %1$s</string>
     <string name="go_back">Go back</string>
     <string name="reload_web_page">Reload the web page</string>
+    <string name="open_source_libraries">Open Source Libraries</string>
     <string name="open_with_the_default_browser">Open with the default browser</string>
+    <!-- %1$s: browser name (e.g. Chrome) -->
+    <string name="open_with_x">Open with %1$s</string>
+    <!-- %1$s: version name (e.g. 1.2.0), %1$s: version code/build number (e.g. 123), %3$s: author name (e.g. Jarvis Lin) -->
+    <string name="version_version_author">Version %1$s(%2$s) • %3$s</string>
     <string name="browse_comments">Browse comments</string>
     <string name="details">Details</string>
     <string name="back">Back</string>
@@ -15,4 +23,6 @@
         <item quantity="one">%1$d comment</item>
         <item quantity="other">%1$d comments</item>
     </plurals>
+    <string name="share_link">Share Link</string>
+    <string name="share_comments">Share Comments</string>
 </resources>

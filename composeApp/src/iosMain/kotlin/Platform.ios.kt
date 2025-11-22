@@ -6,12 +6,19 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import com.multiplatform.webview.request.RequestInterceptor
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import okio.Path.Companion.toPath
+import platform.Foundation.NSBundle
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
+import platform.Foundation.create
+import platform.UIKit.UIActivityViewController
+import platform.UIKit.UIApplication
 import platform.UIKit.UIDevice
 import ui.baseline
 import ui.darkScheme
@@ -21,6 +28,9 @@ import utils.Constants.DATASTORE_FILE_NAME
 @ExperimentalComposeUiApi
 class IOSPlatform : Platform {
     override val name: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
+    override val appName: String = "HN Reader"
+    override val appVersionName: String = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: "1.0"
+    override val appVersionCode: Int = (NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleVersion") as? String)?.toIntOrNull() ?: 0
 
     @OptIn(ExperimentalForeignApi::class)
     override fun createDataStore(): DataStore<Preferences> =
@@ -37,6 +47,26 @@ class IOSPlatform : Platform {
                 path.toPath()
             }
         )
+
+    override fun webRequestInterceptor(): RequestInterceptor? = null
+
+    @OptIn(BetaInteropApi::class)
+    override fun share(title: String, text: String) {
+        val activityItems = listOf(
+            NSString.create(text)
+        )
+
+        val activityViewController = UIActivityViewController(
+            activityItems = activityItems,
+            applicationActivities = null
+        )
+
+        // Get the top-most view controller to present the activity view controller
+        val rootViewController = UIApplication.sharedApplication.keyWindow?.rootViewController
+        rootViewController?.presentViewController(activityViewController, animated = true, completion = null)
+    }
+
+    override fun getDefaultBrowserName(urlString: String): String? = null
 
     @Composable
     override fun getScreenWidth(): Float =
