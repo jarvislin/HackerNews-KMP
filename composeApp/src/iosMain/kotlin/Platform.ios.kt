@@ -28,7 +28,7 @@ import utils.Constants.DATASTORE_FILE_NAME
 @ExperimentalComposeUiApi
 class IOSPlatform : Platform {
     override val name: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
-    override val appName: String = "HN Reader"
+    override val appName: String = "Pulse"
     override val appVersionName: String = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: "1.0"
     override val appVersionCode: Int = (NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleVersion") as? String)?.toIntOrNull() ?: 0
 
