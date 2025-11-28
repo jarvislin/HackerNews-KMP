@@ -2,8 +2,8 @@ package ui
 import androidx.compose.ui.graphics.Color
 
 object HnColor {
-    val launcherBackground = Color(0xFFF7EBE5)
-    val launcherForeground = Color(0xFF855036)
+    val launcherBackground = Color(0xFFDD7740)
+    val launcherForeground = Color(0xFFFFFFFF)
 }
 
 //TODO: move these into HnColor object
