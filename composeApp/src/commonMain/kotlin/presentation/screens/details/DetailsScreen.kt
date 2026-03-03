@@ -12,13 +12,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -27,18 +26,20 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import domain.models.Comment
 import domain.models.Item
+import domain.models.PollOption
 import domain.models.getCommentCount
 import domain.models.getUrl
 import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.an_error_occurred
 import hackernewskmp.composeapp.generated.resources.retry
-import io.github.aakira.napier.Napier
-import kotlinx.coroutines.launch
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.koin.compose.koinInject
+import presentation.viewmodels.DetailsState
 import presentation.viewmodels.DetailsViewModel
 import presentation.viewmodels.MainViewModel
 
@@ -68,6 +69,7 @@ fun DetailsScreen(
     val mainViewModel = koinInject<MainViewModel>()
     val uriHandler = LocalUriHandler.current
     val state by detailsViewModel.state
+    val pollOptions by detailsViewModel.pollOptions.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val item = mainViewModel.state.value.items.first { it.getItemId() == itemId }
     val onClickLink = {
@@ -83,13 +85,20 @@ fun DetailsScreen(
 
     DetailsScreenContent(
         snackBarHostState = snackBarHostState,
-        viewModel = detailsViewModel,
+        state = state,
+        pollOptions = pollOptions,
         item = item,
         tab = tab,
         onBack = onBack,
         onOpenInBrowser = onClickLink,
         onShareLink = onShareLink,
         onShareComments = onShareComments,
+        onFetchItem = detailsViewModel::fetchItem,
+        hasComments = detailsViewModel::hasComments,
+        getComment = detailsViewModel::getComment,
+        isCollapsed = detailsViewModel::isCollapsed,
+        onToggleCollapse = detailsViewModel::toggleCollapse,
+        countDescendants = detailsViewModel::countDescendants,
     )
 
     LaunchedEffect(Unit) {
@@ -109,13 +118,20 @@ fun DetailsScreen(
 @Composable
 fun DetailsScreenContent(
     snackBarHostState: SnackbarHostState,
-    viewModel: DetailsViewModel,
+    state: DetailsState,
+    pollOptions: ImmutableList<PollOption>,
     item: Item,
     tab: DetailsScreenTab,
     onBack: () -> Unit,
     onOpenInBrowser: () -> Unit,
     onShareLink: () -> Unit,
     onShareComments: () -> Unit,
+    onFetchItem: (Item) -> Unit,
+    hasComments: () -> Boolean,
+    getComment: (Long) -> Comment?,
+    isCollapsed: (Long) -> Boolean,
+    onToggleCollapse: (Long) -> Unit,
+    countDescendants: (Long) -> Int,
 ) {
     val urlString = item.getUrl()
     var selectedTab by remember(tab, urlString) { mutableStateOf(if (urlString == null) DetailsScreenTab.Comments else tab) }
@@ -165,15 +181,24 @@ fun DetailsScreenContent(
                     end = padding.calculateEndPadding(LocalLayoutDirection.current),
                     bottom = padding.calculateBottomPadding()
                 ),
-                viewModel = viewModel,
+                state = state,
+                pollOptions = pollOptions,
+                onFetchItem = onFetchItem,
+                hasComments = hasComments,
+                getComment = getComment,
+                isCollapsed = isCollapsed,
+                onToggleCollapse = onToggleCollapse,
+                countDescendants = countDescendants,
             )
         }
         if (urlString != null) {
+            val visible = selectedTab == DetailsScreenTab.Webview
             FadeVisibilityKeepingState(
-                visible = selectedTab == DetailsScreenTab.Webview,
+                visible = visible,
             ) {
                 WebviewTabContent(
                     url = urlString,
+                    visible = visible,
                     modifier = Modifier
                         .padding(padding)
                 )

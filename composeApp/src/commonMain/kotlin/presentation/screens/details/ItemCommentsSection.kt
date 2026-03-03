@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import be.digitalia.compose.htmlconverter.htmlToAnnotatedString
 import domain.models.Comment
@@ -37,10 +38,8 @@ import hackernewskmp.composeapp.generated.resources.no_comment
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import presentation.widgets.IndentedBox
 import presentation.widgets.SquircleBadge
-import sv.lib.squircleshape.SquircleShape
 import ui.AppPreview
 import kotlin.time.ExperimentalTime
 

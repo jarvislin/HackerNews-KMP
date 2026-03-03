@@ -35,6 +35,8 @@ import hackernewskmp.composeapp.generated.resources.Res
 import hackernewskmp.composeapp.generated.resources.ic_clock_circle_linear
 import hackernewskmp.composeapp.generated.resources.ic_like_outline
 import hackernewskmp.composeapp.generated.resources.ic_user_circle_linear
+import kotlinx.collections.immutable.ImmutableList
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import ui.trimmedTextStyle
 
@@ -42,7 +44,7 @@ import ui.trimmedTextStyle
 @Composable
 fun ItemDetailsSection(
     item: Item,
-    pollOptions: List<PollOption>
+    pollOptions: ImmutableList<PollOption>
 ) {
     Column(Modifier.padding(horizontal = 16.dp)) {
         Text(
@@ -55,15 +57,15 @@ fun ItemDetailsSection(
         ) {
             HeaderChip(
                 label = item.getPoint().toString(),
-                icon = painterResource(Res.drawable.ic_like_outline)
+                icon = Res.drawable.ic_like_outline
             )
             HeaderChip(
                 label = item.getFormattedDiffTimeShort(),
-                icon = painterResource(Res.drawable.ic_clock_circle_linear)
+                icon = Res.drawable.ic_clock_circle_linear
             )
             HeaderChip(
                 label = item.getUserName(),
-                icon = painterResource(Res.drawable.ic_user_circle_linear)
+                icon = Res.drawable.ic_user_circle_linear
             )
         }
         if (item is Poll) {
@@ -84,19 +86,19 @@ fun ItemDetailsSection(
 private fun HeaderChip(
     label: String,
     modifier: Modifier = Modifier,
-    icon: Painter? = null,
+    icon: DrawableResource? = null,
 ) {
     AssistChip(
         modifier = modifier,
         onClick = { },
         label = { Text(label) },
-        leadingIcon = icon?.let{ { Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp)) } }
+        leadingIcon = icon?.let{ { Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(16.dp)) } }
     )
 }
 
 @Composable
 private fun PollContent(
-    pollOptions: List<PollOption>,
+    pollOptions: ImmutableList<PollOption>,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {

@@ -34,16 +34,16 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
-            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.ui.backhandler)
+            implementation(libs.compose.ui.tooling.preview)
             implementation(libs.kotlin.serialization.json)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.logging)
@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.napier)
             implementation(libs.navigation.compose)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.collections.immutable)
             implementation(libs.compose.webview.multiplatform)
             implementation(libs.htmlconverter)
             implementation(libs.coil.compose)
@@ -58,7 +59,6 @@ kotlin {
             implementation(libs.squircle.shape)
             implementation(libs.androidx.datastore)
             implementation(libs.androidx.datastore.preferences)
-            implementation(libs.ui.backhandler)
         }
     }
 }
@@ -98,7 +98,7 @@ android {
         buildConfig = true
     }
     dependencies {
-        debugImplementation(compose.uiTooling)
+        debugImplementation(libs.compose.ui.tooling)
     }
 }
 

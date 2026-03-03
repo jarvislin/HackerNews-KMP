@@ -2,15 +2,17 @@
 app-version-name = "1.3.1"
 app-version-code = "8"
 
-agp = "8.13.0"
+agp = "8.13.2"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "36"
-compose-plugin = "1.9.3"
 
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 
-androidx-activityCompose = "1.11.0"
+# https://github.com/JetBrains/compose-multiplatform/releases
+compose = "1.10.0"
+
+androidx-activityCompose = "1.12.3"
 
 # https://github.com/coil-kt/coil/releases
 coil = "3.3.0"
@@ -19,7 +21,7 @@ coil = "3.3.0"
 compose-webview-multiplatform = "2.0.3"
 
 # https://developer.android.com/kotlin/multiplatform/datastore
-datastore = "1.1.7"
+datastore = "1.2.0"
 
 # https://github.com/cbeyls/HtmlConverterCompose/releases
 htmlconverter = "1.1.0"
@@ -28,29 +30,44 @@ htmlconverter = "1.1.0"
 koin = "4.1.1"
 
 # https://github.com/Kotlin/kotlinx.serialization/releases
-kotlinx-serialization-json = "1.9.0"
+kotlinx-serialization-json = "1.10.0"
 
 # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-datetime = "0.7.1"
 
+# https://github.com/Kotlin/kotlinx.collections.immutable/releases
+kotlinx-collections-immutable = "0.4.0"
+
 # https://ktor.io/docs/client-create-multiplatform-application.html#build-script
-ktor = "3.3.2"
+ktor = "3.4.0"
 
 # https://github.com/AAkira/Napier/releases
 napier = "2.7.1"
+
+# https://mvnrepository.com/artifact/org.jetbrains.compose.material3/material3
+material3 = "1.9.0"
 
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-navigation-routing.html
 navigation-compose = "2.9.1"
 
 # https://github.com/stoyan-vuchev/squircle-shape/releases
-squircleShape = "4.0.0"
-
-# https://mvnrepository.com/artifact/org.jetbrains.compose.ui/ui-backhandler
-uiBackhandler = "1.9.3"
+# 5.1.0 is using gradle 9+
+squircleShape = "5.0.0"
 
 [libraries]
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
+
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 compose-webview-multiplatform = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "compose-webview-multiplatform" }
@@ -59,19 +76,20 @@ koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+
 squircle-shape = { module = "com.stoyanvuchev:squircle-shape", version.ref = "squircleShape" }
-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "uiBackhandler" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

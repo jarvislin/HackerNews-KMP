@@ -10,6 +10,12 @@ import domain.interactors.GetStories
 import domain.models.Category
 import domain.models.Item
 import domain.models.TopStories
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -23,7 +29,7 @@ class MainViewModel(
     init {
         viewModelScope.launch {
             appPreferences.seenItemList.collect {
-                _state.value = state.value.copy(seenItemsIds = it)
+                _state.value = state.value.copy(seenItemsIds = it.toPersistentSet())
             }
         }
     }
@@ -36,7 +42,7 @@ class MainViewModel(
             _state.value = state.value.copy(loading = true)
             if (state.value.itemIds.isEmpty()) {
                 getStories(state.value.currentCategory)
-                    .onSuccess { _state.value = state.value.copy(itemIds = state.value.itemIds + it) }
+                    .onSuccess { _state.value = state.value.copy(itemIds = (state.value.itemIds + it).toPersistentList()) }
                     .onFailure { _state.value = state.value.copy(error = it) }
             }
             val nextPageIds = state.value.itemIds.drop(state.value.currentPage * PAGE_SIZE).take(PAGE_SIZE)
@@ -44,7 +50,7 @@ class MainViewModel(
             _state.value = state.value.copy(
                 loading = false,
                 refreshing = false,
-                items = state.value.items + newItems,
+                items = (state.value.items + newItems).toPersistentList(),
                 currentPage = state.value.currentPage + 1,
             )
         }
@@ -52,13 +58,13 @@ class MainViewModel(
 
     fun reset() {
         _state.value = state.value.copy(
-            loading = false, itemIds = emptyList(), items = emptyList(), currentPage = 0, error = null
+            loading = false, itemIds = persistentListOf(), items = persistentListOf(), currentPage = 0, error = null
         )
     }
 
     fun onPullToRefresh() {
         _state.value = state.value.copy(
-            refreshing = true, loading = false, itemIds = emptyList(), items = emptyList(), currentPage = 0, error = null
+            refreshing = true, loading = false, itemIds = persistentListOf(), items = persistentListOf(), currentPage = 0, error = null
         )
         loadNextPage()
     }
@@ -69,8 +75,8 @@ class MainViewModel(
             currentCategory = item,
             loading = false,
             refreshing = false,
-            itemIds = emptyList(),
-            items = emptyList(),
+            itemIds = persistentListOf(),
+            items = persistentListOf(),
             currentPage = 0,
             error = null
         )
@@ -89,9 +95,9 @@ class MainViewModel(
 }
 
 data class MainState(
-    val items: List<Item> = emptyList(),
-    val itemIds: List<Long> = emptyList(),
-    val seenItemsIds: Set<String> = emptySet(),
+    val items: ImmutableList<Item> = persistentListOf(),
+    val itemIds: ImmutableList<Long> = persistentListOf(),
+    val seenItemsIds: ImmutableSet<String> = persistentSetOf(),
     val loading: Boolean = false,
     val refreshing: Boolean = false,
     val error: Throwable? = null,

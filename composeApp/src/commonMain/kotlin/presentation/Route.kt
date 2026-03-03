@@ -27,7 +27,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
             MainScreen(
                 onClickItem = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Webview.name)) },
                 onClickComment = { navController.navigate(DetailsRoute(id = it.getItemId(), tab = DetailsScreenTab.Comments.name)) },
-                onClickAbout = { navController.navigate(AboutRoute) }
+                onClickAbout = { navController.navigate(AboutRoute) },
             )
         }
 
