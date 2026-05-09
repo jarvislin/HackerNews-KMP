@@ -2,12 +2,12 @@
 app-version-name = "1.3.1"
 app-version-code = "8"
 
-agp = "8.13.2"
+agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "36"
 
-kotlin = "2.3.0"
+kotlin = "2.3.21"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
 compose = "1.10.0"
@@ -88,8 +88,9 @@ squircle-shape = { module = "com.stoyanvuchev:squircle-shape", version.ref = "sq
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
-jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

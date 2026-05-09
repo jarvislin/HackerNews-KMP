@@ -51,7 +51,7 @@ val dataModule = module {
     }
     single { ApiHandler }
     
-    single { getPlatform().createDataStore() }
+    single { getPlatform().createDataStore(get()) }
 
     single { AppPreferences(get()) }
 }
