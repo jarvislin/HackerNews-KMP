@@ -3,12 +3,12 @@ package com.jarvislin.hackernews
 import initKoin
 import android.app.Application
 
-
 class HnKmp : Application() {
 
     override fun onCreate() {
         super.onCreate()
         initKoin()
+        initKoinAndroid()
         instance = this
     }
 

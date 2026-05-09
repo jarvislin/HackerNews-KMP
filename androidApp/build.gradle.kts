@@ -17,16 +17,14 @@ kotlin {
         implementation(projects.composeApp)
 
         implementation(libs.androidx.activity.compose)
+        implementation(libs.koin.compose)
+        debugImplementation(libs.compose.ui.tooling)
     }
 }
 
 android {
     namespace = "com.jarvislin.hackernews"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    sourceSets["main"].res.srcDirs("src/androidMain/res")
-    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
 
     defaultConfig {
         applicationId = "com.jarvislin.hackernews"
@@ -53,8 +51,5 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    dependencies {
-        debugImplementation(libs.compose.ui.tooling)
     }
 }

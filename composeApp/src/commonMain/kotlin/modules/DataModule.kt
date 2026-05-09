@@ -9,7 +9,7 @@ import domain.models.Job
 import domain.models.Poll
 import domain.models.PollOption
 import domain.models.Story
-import getPlatform
+import Platform
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -51,7 +51,7 @@ val dataModule = module {
     }
     single { ApiHandler }
     
-    single { getPlatform().createDataStore(get()) }
+    single { get<Platform>().createDataStore() }
 
     single { AppPreferences(get()) }
 }
