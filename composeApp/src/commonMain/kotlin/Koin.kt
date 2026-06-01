@@ -1,4 +1,5 @@
 import modules.dataModule
+import modules.platformModule
 import modules.repositoryModule
 import modules.useCaseModule
 import modules.viewModelModule
@@ -13,6 +14,7 @@ fun initKoin() {
                 repositoryModule,
                 useCaseModule,
                 viewModelModule,
+                platformModule(),
             )
         }
     } catch (_: KoinApplicationAlreadyStartedException) {
