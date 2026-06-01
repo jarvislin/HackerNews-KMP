@@ -18,3 +18,4 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 composeApp/release
 upload_keystore.jks
+androidApp/release
