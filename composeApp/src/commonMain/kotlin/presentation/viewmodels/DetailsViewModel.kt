@@ -1,5 +1,6 @@
 package presentation.viewmodels
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +18,9 @@ import extensions.shareCommentsText
 import extensions.shareLinkText
 import getPlatform
 import io.github.aakira.napier.Napier
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.takeWhile
@@ -31,7 +35,7 @@ class DetailsViewModel(
 
     private val _comments = mutableStateMapOf<Long, Comment>()
 
-    private val _pollOptions = MutableStateFlow<List<PollOption>>(emptyList())
+    private val _pollOptions = MutableStateFlow<ImmutableList<PollOption>>(persistentListOf())
     val pollOptions = _pollOptions.asStateFlow()
 
     private val _collapsedStates = mutableStateMapOf<Long, Boolean>()
@@ -68,7 +72,7 @@ class DetailsViewModel(
             _state.value = state.value.copy(loadingPollOptions = true)
             getPollOptions(optionIds).fold(
                 onSuccess = {
-                    _pollOptions.value = it
+                    _pollOptions.value = it.toPersistentList()
                     _state.value = state.value.copy(
                         loadingPollOptions = false
                     )
@@ -116,6 +120,7 @@ class DetailsViewModel(
     }
 }
 
+@Stable
 data class DetailsState(
     val loadingPollOptions: Boolean = false,
     val loadingComments: Boolean = false,

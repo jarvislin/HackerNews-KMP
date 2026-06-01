@@ -5,6 +5,9 @@ package domain.models
 import data.remote.models.RawItem
 import extensions.TimeExtension.format
 import extensions.TimeExtension.toInstant
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
@@ -134,9 +137,9 @@ fun Item.getPoint(): Int = when (this) {
     is Story -> score
 }
 
-fun Item.getCommentIds(): List<Long> = when (this) {
-    is Story -> commentIds
-    is Ask -> commentIds
-    is Comment -> commentIds
-    else -> emptyList()
+fun Item.getCommentIds(): ImmutableList<Long> = when (this) {
+    is Story -> commentIds.toPersistentList()
+    is Ask -> commentIds.toPersistentList()
+    is Comment -> commentIds.toPersistentList()
+    else -> persistentListOf()
 }

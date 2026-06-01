@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import domain.models.Item
 import domain.models.getCommentCount
@@ -35,7 +36,6 @@ import hackernewskmp.composeapp.generated.resources.ic_link_minimalistic_linear
 import io.ktor.http.Url
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import presentation.widgets.LabelledIcon
 import ui.AppPreview
 import kotlin.time.ExperimentalTime
@@ -75,16 +75,16 @@ fun ItemRowWidget(
                     LabelledIcon(
                         label = url.trimmedHostName(),
                         url = url.faviconUrl(),
-                        placeholder = painterResource(Res.drawable.ic_link_minimalistic_linear),
+                        placeholder = Res.drawable.ic_link_minimalistic_linear,
                     )
                 }
                 LabelledIcon(
                     label = item.getPoint().toString(),
-                    icon = painterResource(Res.drawable.ic_like_outline),
+                    icon = Res.drawable.ic_like_outline,
                 )
                 LabelledIcon(
                     label = item.getFormattedDiffTimeShort(),
-                    icon = painterResource(Res.drawable.ic_clock_circle_linear),
+                    icon = Res.drawable.ic_clock_circle_linear,
                 )
             }
         }

@@ -15,28 +15,30 @@ import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import com.jarvislin.hackernews.BuildConfig
-import com.jarvislin.hackernews.HnKmp
-import com.jarvislin.hackernews.R
 import com.multiplatform.webview.request.RequestInterceptor
 import com.multiplatform.webview.request.WebRequest
 import com.multiplatform.webview.request.WebRequestInterceptResult
 import com.multiplatform.webview.web.WebViewNavigator
 import io.github.aakira.napier.Napier
 import okio.Path.Companion.toPath
+import org.koin.core.context.GlobalContext
 import ui.appTypography
 import ui.darkScheme
 import ui.lightScheme
 import utils.Constants.DATASTORE_FILE_NAME
 
-class AndroidPlatform(private val context: Context) : Platform {
+class AndroidPlatform(
+    private val context: Context,
+    private val versionName: String,
+    private val versionCode: Int,
+) : Platform {
     override val name: String = "Android ${Build.VERSION.SDK_INT}"
 
-    override val appName: String = context.getString(R.string.app_name)
+    override val appName: String = "Pulse"
 
-    override val appVersionName: String = BuildConfig.VERSION_NAME
+    override val appVersionName: String = versionName
 
-    override val appVersionCode: Int = BuildConfig.VERSION_CODE
+    override val appVersionCode: Int = versionCode
 
     override fun createDataStore(): DataStore<Preferences> =
         PreferenceDataStoreFactory.createWithPath(
@@ -108,4 +110,4 @@ class AndroidPlatform(private val context: Context) : Platform {
     }
 }
 
-actual fun getPlatform(): Platform = AndroidPlatform(HnKmp.instance)
+actual fun getPlatform(): Platform = GlobalContext.get().get<Platform>()

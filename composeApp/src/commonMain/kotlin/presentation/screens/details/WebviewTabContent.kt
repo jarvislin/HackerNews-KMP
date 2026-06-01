@@ -24,22 +24,24 @@ import utils.Constants
 @Composable
 fun WebviewTabContent(
     url: String,
+    visible: Boolean,
     modifier: Modifier = Modifier,
     defaultBackgroundColor: Color = MaterialTheme.colorScheme.background,
-    webViewNavigator: WebViewNavigator = rememberWebViewNavigator(
+) {
+    val webViewNavigator = rememberWebViewNavigator(
         requestInterceptor = getPlatform().webRequestInterceptor()
-    ),
-    webViewState: WebViewState = rememberWebViewState(
+    )
+    val webViewState = rememberWebViewState(
         url = wrapUrl(url),
         extraSettings = {
             backgroundColor = Color.White
             iOSWebSettings.underPageBackgroundColor = defaultBackgroundColor
         }
-    ),
-) {
+    )
     Box(modifier = modifier.fillMaxSize()) {
         WebView(
             navigator = webViewNavigator,
+            captureBackPresses = visible,
             state = webViewState,
             modifier = Modifier
                 .fillMaxSize()
