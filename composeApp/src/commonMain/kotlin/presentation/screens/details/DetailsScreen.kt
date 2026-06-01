@@ -43,6 +43,7 @@ import presentation.viewmodels.DetailsState
 import presentation.viewmodels.DetailsViewModel
 import presentation.viewmodels.MainViewModel
 
+
 @Serializable
 data class DetailsRoute(
     @SerialName("id")
@@ -61,12 +62,12 @@ enum class DetailsScreenTab {
 
 @Composable
 fun DetailsScreen(
+    mainViewModel: MainViewModel,
     itemId: Long,
     tab: DetailsScreenTab,
     onBack: () -> Unit,
 ) {
     val detailsViewModel = koinInject<DetailsViewModel>()
-    val mainViewModel = koinInject<MainViewModel>()
     val uriHandler = LocalUriHandler.current
     val state by detailsViewModel.state
     val pollOptions by detailsViewModel.pollOptions.collectAsState()

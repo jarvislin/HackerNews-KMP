@@ -56,6 +56,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.logging)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             implementation(libs.napier)
             implementation(libs.navigation.compose)
             implementation(libs.kotlinx.datetime)

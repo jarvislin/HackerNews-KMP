@@ -65,7 +65,6 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import presentation.viewmodels.MainViewModel
 
 @Serializable
@@ -73,11 +72,11 @@ object MainRoute
 
 @Composable
 fun MainScreen(
+    viewModel: MainViewModel,
     onClickItem: (Item) -> Unit,
     onClickComment: (Item) -> Unit,
     onClickAbout: () -> Unit,
 ) {
-    val viewModel = koinInject<MainViewModel>()
     val state by viewModel.state
     val isRefreshIndicatorVisible = state.refreshing || (state.loading && state.items.isEmpty())
     val snackBarHostState = remember { SnackbarHostState() }
